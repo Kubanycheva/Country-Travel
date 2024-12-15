@@ -59,3 +59,9 @@ class PopularReview(models.Model):
     def __str__(self):
         return f'{self.rating} - {self.client}'
 
+
+class Concert(models.Model):
+    concert_name = models.CharField(max_length=155, unique=True)
+
+    def __str__(self):
+        return self.concert_name
