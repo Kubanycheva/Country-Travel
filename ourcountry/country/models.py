@@ -21,3 +21,7 @@ class Regions(models.Model):
     description = models.TextField()
     regions_image = models.ImageField(upload_to='regions_image/')
 
+xdrcftvgybhunji
+xdfghjk
+fvghbjkhbjnk
+hbjnk
