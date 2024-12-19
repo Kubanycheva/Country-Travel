@@ -24,11 +24,11 @@
 <<<<<<< HEAD
   <component name="PropertiesComponent">{}</component>
 =======
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "git-widget-placeholder": "master"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;
   }
-}]]></component>
+}</component>
 >>>>>>> 612b21f3d99d270195f4c17a3494602ecada04a8
   <component name="RunManager">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
