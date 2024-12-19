@@ -42,6 +42,9 @@ class HomeReview(models.Model):
     def __str__(self):
         return f'{self.client_home}'
 
+    def get_avg(self):
+        return self.course_review.filter(rating=5).count()
+
     def get_avg_rating(self):
         ratings = self.home_reviews.all()
         if ratings.exists():
@@ -85,6 +88,9 @@ class PopularReview(models.Model):
     comment = models.TextField()
     popular = models.ForeignKey(PopularRegion, on_delete=models.CASCADE)  #inline
 
+    def get_avg(self):
+        return self.course_review.filter(rating=5).count()
+
     def __str__(self):
         return f'{self.client_popular}'
 
@@ -118,6 +124,9 @@ class GalleryReview(models.Model):
     client_gallery = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='gallery_reviews')
     comment = models.TextField()
     gallery = models.ForeignKey(Gallery, on_delete=models.CASCADE) #inline
+
+    def get_avg(self):
+        return self.course_review.filter(rating=5).count()
 
     def __str__(self):
         return f'{self.client_gallery}'
@@ -242,6 +251,9 @@ class HotelsReview(models.Model):
     comment = models.TextField()
     hotel_region = models.ForeignKey(HotelsRegion, on_delete=models.CASCADE)  # inline
 
+    def get_avg(self):
+        return self.course_review.filter(rating=5).count()
+
     def __str__(self):
         return f'{self.client_hotel}'
 
@@ -269,6 +281,9 @@ class KitchenReview(models.Model):
     client_kitchen = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='kitchen_reviews')
     comment = models.TextField()
     kitchen_region = models.ForeignKey(Kitchen, on_delete=models.CASCADE)  # inline
+
+    def get_avg(self):
+        return self.course_review.filter(rating=5).count()
 
     def __str__(self):
         return f'{self.client_kitchen}'
