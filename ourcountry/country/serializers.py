@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from .models import *
-from django.contrib.auth import authenticate
 
 # FOR CHARLES DEO
 
@@ -17,13 +16,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
 class HomeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Home
-        fields = '__all__'
+        fields = ['home_name', 'home_image', 'home_description']
 
 
 class AttractionsHomeSerializer(serializers.ModelSerializer):
     class Meta:
         model = AttractionsHome
-        fields = '__all__'
+        fields = []
 
 
 class HomeReviewSerializer(serializers.ModelSerializer):
