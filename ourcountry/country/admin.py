@@ -3,39 +3,55 @@ from .models import *
 
 
 # FOR CHARLES DEO
-admin.site.register(UserProfile)
 
 # FOR HOME
 
 
-class HomeReviewInline(admin.TabularInline):
-    model = HomeReview
+class AttractionReviewInline(admin.TabularInline):
+    model = AttractionReview
     extra = 1
 
 
-class AttractionsHomeAdmin(admin.ModelAdmin):
-    inlines = [HomeReviewInline]
+class AttractionsImageInline(admin.TabularInline):
+    model = AttractionsImage
+    extra = 1
+
+
+class AttractionsAdmin(admin.ModelAdmin):
+    inlines = [AttractionReviewInline, AttractionsImageInline]
 
 
 admin.site.register(Home)
-admin.site.register(AttractionsHome, AttractionsHomeAdmin)
-admin.site.register(AttractionCulture)
+admin.site.register(Attractions, AttractionsAdmin)
 
 # FOR REGIONS
 
+admin.site.register(Region)
 
-class PopularReviewInline(admin.TabularInline):
-    model = PopularReview
+
+class ReviewImageInline(admin.TabularInline):
+    model = ReviewImage
     extra = 1
 
 
-class PopularRegionAdmin(admin.ModelAdmin):
-    inlines = [PopularReviewInline]
+class PopularReviewAdmin(admin.ModelAdmin):
+    inlines = [ReviewImageInline]
 
 
-admin.site.register(Region)
-admin.site.register(PopularRegion, PopularRegionAdmin)
-admin.site.register(ToTry)
+admin.site.register(PopularReview, PopularReviewAdmin)
+admin.site.register(PopularPlaces)
+
+
+class ToTryImageInline(admin.TabularInline):
+    model = ToTryImage
+    extra = 3
+
+
+class ToTryAdmin(admin.ModelAdmin):
+    inlines = [ToTryImageInline]
+
+
+admin.site.register(ToTry, ToTryAdmin)
 
 # FOR GALLERY
 
@@ -65,7 +81,10 @@ admin.site.register(NationalInstruments)
 
 admin.site.register(PlacesRegion)
 
-# FOR Hotels
+
+class HotelsImageInlines(admin.TabularInline):
+    model = HotelsImage
+    extra = 1
 
 
 class HotelsReviewInline(admin.TabularInline):
@@ -73,24 +92,13 @@ class HotelsReviewInline(admin.TabularInline):
     extra = 1
 
 
-class HotelsRegionAdmin(admin.ModelAdmin):
-    inlines = [HotelsReviewInline]
+class HotelsAdmin(admin.ModelAdmin):
+    inlines = [HotelsReviewInline, HotelsImageInlines]
 
 
-admin.site.register(HotelsRegion, HotelsRegionAdmin)
-admin.site.register(HotelsReview)
+admin.site.register(Hotels, HotelsAdmin)
 
 # FOR Hotels
-
-
-class HotelsReviewInline(admin.TabularInline):
-    model = HotelsReview
-    extra = 1
-
-
-class HotelsRegionAdmin(admin.ModelAdmin):
-    inlines = [HotelsReviewInline]
-
 # for kitchen
 
 
@@ -99,39 +107,27 @@ class KitchenReviewInline(admin.TabularInline):
     extra = 1
 
 
+class KitchenImageInline(admin.TabularInline):
+    model = KitchenImage
+    extra = 1
+
+
 class KitchenAdmin(admin.ModelAdmin):
-    inlines = [KitchenReviewInline]
+    inlines = [KitchenReviewInline, KitchenImageInline]
 
 
 admin.site.register(Kitchen, KitchenAdmin)
-
-
-# FOR event
-
-#  7 categories
-
-admin.site.register(Concert)
-admin.site.register(EventConcert)
-admin.site.register(Cinema)
-admin.site.register(EventCinema)
-admin.site.register(Leisure)
-admin.site.register(EventLeisure)
-admin.site.register(Theater)
-admin.site.register(EventTheater)
-admin.site.register(MasterClasses)
-admin.site.register(EventMaster)
-admin.site.register(Tourism)
-admin.site.register(EventTourism)
-
-
-#FOR Attractions
-
-admin.site.register(AttractionsEvent)
-admin.site.register(AttractionsEventReview)
-
-# FOR FAVORITE
-
-
 admin.site.register(Favorite)
 admin.site.register(FavoriteItem)
 
+
+class EventInlines(admin.TabularInline):
+    model = Event
+    extra = 1
+
+
+class EventCategoriesAdmin(admin.ModelAdmin):
+    inlines = [EventInlines]
+
+
+admin.site.register(EventCategories, EventCategoriesAdmin)
