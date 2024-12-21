@@ -444,7 +444,6 @@ class FavoriteItem(models.Model):
     attractions = models.ForeignKey(AttractionsHome, on_delete=models.CASCADE, null=True, blank=True)
     popular_region = models.ForeignKey(PopularRegion, on_delete=models.CASCADE, null=True, blank=True)
     gallery = models.ForeignKey(Gallery, on_delete=models.CASCADE, null=True, blank=True)
-    popular_region = models.ForeignKey(PopularRegion, on_delete=models.CASCADE, null=True, blank=True)
 
 
 
