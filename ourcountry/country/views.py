@@ -99,3 +99,42 @@ class EventListAPiView(generics.ListAPIView):
     queryset = Event.objects.all()
     serializer_class = EventSerializers
 
+
+class CultureListAPiView(generics.ListAPIView):
+    queryset = Culture.objects.all()
+    serializer_class = CultureSerializers
+
+
+class GamesViewSet(viewsets.ModelViewSet):
+    queryset = Games.objects.all()
+    serializer_class = GamesSerializers
+
+
+class NationalClothesViewSet(viewsets.ModelViewSet):
+    queryset = NationalClothes.objects.all()
+    serializer_class = NationalClothesSerializers
+
+
+class CurrencyViewSet(viewsets.ModelViewSet):
+    queryset = Currency.objects.all()
+    serializer_class = CurrencySerializers
+
+
+class HandCraftsViewSet(viewsets.ModelViewSet):
+    queryset = HandCrafts.objects.all()
+    serializer_class = HandCraftsSerializers
+
+
+class NationalInstrumentsViewSet(viewsets.ModelViewSet):
+    queryset = NationalInstruments.objects.all()
+    serializer_class = NationalInstrumentsSerializers
+
+
+class CultureKitchenViewSet(viewsets.ModelViewSet):
+    queryset = CultureKitchen.objects.all()
+    serializer_class = CultureKitchenSerializers
+
+
+class GalleryListAPIView(generics.ListAPIView):
+    queryset = Gallery.objects.all()
+    serializer_class = GallerySerializers

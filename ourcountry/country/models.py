@@ -263,6 +263,38 @@ class Kitchen(models.Model):
             return ratings.count()
         return 0
 
+    def get_nutrition_rating(self):
+        ratings = self.kitchen_reviews.all()
+        valid_ratings = [rating.nutrition_rating for rating in ratings if rating.nutrition_rating is not None]
+
+        if valid_ratings:
+            return round(sum(valid_ratings) / len(valid_ratings), 1)
+        return
+
+    def get_service_rating(self):
+        ratings = self.kitchen_reviews.all()
+        valid_ratings = [rating.service_rating for rating in ratings if rating.nutrition_rating is not None]
+
+        if valid_ratings:
+            return round(sum(valid_ratings) / len(valid_ratings), 1)
+        return 0
+
+    def get_price_rating(self):
+        ratings = self.kitchen_reviews.all()
+        valid_ratings = [rating.price_rating for rating in ratings if rating.nutrition_rating is not None]
+
+        if valid_ratings:
+            return round(sum(valid_ratings) / len(valid_ratings), 1)
+        return 0
+
+    def get_atmosphere_rating(self):
+        ratings = self.kitchen_reviews.all()
+        valid_ratings = [rating.atmosphere_rating for rating in ratings if rating.nutrition_rating is not None]
+
+        if valid_ratings:
+            return round(sum(valid_ratings) / len(valid_ratings), 1)
+        return 0
+
 
 class KitchenImage(models.Model):
     kitchen = models.ForeignKey(Kitchen, on_delete=models.CASCADE, related_name='kitchen_image')
@@ -272,14 +304,18 @@ class KitchenImage(models.Model):
 class KitchenReview(models.Model):
     client_kitchen = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     comment = models.TextField()
-    kitchen_region = models.ForeignKey(Kitchen, on_delete=models.CASCADE, related_name='kitchen_reviews')  # inline
+    kitchen_region = models.ForeignKey(Kitchen, on_delete=models.CASCADE, related_name='kitchen_reviews')
     rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], null=True, blank=True)
-
-    def get_avg(self):
-        return self.course_review.filter(rating=5).count()
+    nutrition_rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], null=True, blank=True)
+    service_rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], null=True, blank=True)
+    price_rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], null=True, blank=True)
+    atmosphere_rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], null=True, blank=True)
 
     def __str__(self):
         return f'{self.client_kitchen}'
+
+
+
 
 
 # FOR event
@@ -309,21 +345,10 @@ class Event(models.Model):
 class Gallery(models.Model):
     gallery_name = models.CharField(max_length=55)
     gallery_image = models.ImageField(upload_to='gellery_images')
+    address = models.CharField(max_length=62)
 
     def __str__(self):
         return self.gallery_name
-
-
-class GalleryReview(models.Model):
-    client_gallery = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='gallery_reviews')
-    comment = models.TextField()
-    gallery = models.ForeignKey(Gallery, on_delete=models.CASCADE) #inline
-
-    def get_avg(self):
-        return self.course_review.filter(rating=5).count()
-
-    def __str__(self):
-        return f'{self.client_gallery}'
 
     def get_avg_rating(self):
         ratings = self.gallery_reviews.all()
@@ -331,9 +356,26 @@ class GalleryReview(models.Model):
             return round(sum(i.rating for i in ratings) / ratings.count(), 1)
         return 0
 
+    def get_rating_count(self):
+        ratings = self.gallery_reviews.all()
+        if ratings.exists():
+            return ratings.count()
+        return 0
+
+
+class GalleryReview(models.Model):
+    client_gallery = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    comment = models.TextField()
+    gallery = models.ForeignKey(Gallery, on_delete=models.CASCADE, related_name='gallery_reviews') #inline
+    rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.client_gallery}'
+
+
+
 
 # FOR CULTURE
-
 
 class Culture(models.Model):
     culture_name = models.CharField(max_length=35)
@@ -346,7 +388,6 @@ class Culture(models.Model):
 
 class Games(models.Model):
     games_name = models.CharField(max_length=300)
-    culture_games = models.ForeignKey(Culture, on_delete=models.CASCADE, related_name='culture_games')
     games_description = models.TextField()
     games_image = models.ImageField(upload_to='games_images')
 
@@ -356,7 +397,6 @@ class Games(models.Model):
 
 class NationalClothes(models.Model):
     clothes_name = models.CharField(max_length=300)
-    culture_clothes = models.ForeignKey(Culture, on_delete=models.CASCADE, related_name='culture_clothes')
     clothes_description = models.TextField()
     clothes_image = models.ImageField(upload_to='clothes_images')
 
@@ -366,7 +406,6 @@ class NationalClothes(models.Model):
 
 class HandCrafts(models.Model):
     hand_name = models.CharField(max_length=300)
-    culture_hand = models.ForeignKey(Culture, on_delete=models.CASCADE, related_name='culture_hand')
     hand_description = models.TextField()
     hand_image = models.ImageField(upload_to='hand_images')
 
@@ -376,7 +415,6 @@ class HandCrafts(models.Model):
 
 class Currency(models.Model):
     currency_name = models.CharField(max_length=300)
-    culture_currency = models.ForeignKey(Culture, on_delete=models.CASCADE, related_name='culture_currency')
     currency_description = models.TextField()
     hand_image = models.ImageField(upload_to='currency_images')
 
@@ -386,7 +424,6 @@ class Currency(models.Model):
 
 class NationalInstruments(models.Model):
     national_name = models.CharField(max_length=300)
-    culture_national = models.ForeignKey(Culture, on_delete=models.CASCADE, related_name='culture_national')
     national_description = models.TextField()
     national_image = models.ImageField(upload_to='national_images')
 
@@ -394,15 +431,14 @@ class NationalInstruments(models.Model):
         return self.national_name
 
 
-# class Kitchen(models.Model):
-#     kitchen_name = models.CharField(max_length=300)
-#     culture_kitchen = models.ForeignKey(Culture, on_delete=models.CASCADE, related_name='culture_kitchen')
-#     kitchen_description = models.TextField()
-#     kitchen_image = models.ImageField(upload_to='kitchen_images')
-#
-#     def __str__(self):
-#         return self.kitchen_name
-#
+class CultureKitchen(models.Model):
+    kitchen_name = models.CharField(max_length=300)
+    kitchen_description = models.TextField()
+    kitchen_image = models.ImageField(upload_to='kitchen_images')
+
+    def __str__(self):
+        return self.kitchen_name
+
 
 
 # FOR FAVORITE

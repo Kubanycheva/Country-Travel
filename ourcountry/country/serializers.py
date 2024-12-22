@@ -208,17 +208,33 @@ class KitchenDetailSerializers(serializers.ModelSerializer):
     average_rating = serializers.SerializerMethodField()
     rating_count = serializers.SerializerMethodField()
     kitchen_image = KitchenImageSerializers()
+    nutrition_rating = serializers.SerializerMethodField()
+    service_rating = serializers.SerializerMethodField()
+    price_rating = serializers.SerializerMethodField()
+    atmosphere_rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Kitchen
         fields = ['kitchen_name', 'kitchen_image', 'price', 'specialized_menu', 'meal_time', 'description',
-                  'average_rating', 'rating_count']
+                  'average_rating', 'rating_count', 'nutrition_rating', 'service_rating', 'price_rating', 'atmosphere_rating']
 
     def get_average_rating(self, obj):
         return obj.get_average_rating()
 
     def get_rating_count(self, obj):
         return obj.get_rating_count()
+
+    def get_nutrition_rating(self, obj):
+        return obj.get_nutrition_rating()
+
+    def get_service_rating(self, obj):
+        return obj.get_service_rating()
+
+    def get_price_rating(self, obj):
+        return obj.get_price_rating()
+
+    def get_atmosphere_rating(self, obj):
+        return obj.get_atmosphere_rating()
 
 
 class KitchenReviewSerializer(serializers.ModelSerializer):
@@ -239,3 +255,60 @@ class EventSerializers(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = ['title', 'image', 'category', 'date', 'time', 'address', 'price']
+
+
+class CultureSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Culture
+        fields = ['culture_name', 'culture_description', 'culture_image']
+
+
+class GamesSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Games
+        fields = ['games_name', 'games_description', 'games_image']
+
+
+class NationalClothesSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = NationalClothes
+        fields = ['clothes_name', 'clothes_description', 'clothes_image']
+
+
+class HandCraftsSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = HandCrafts
+        fields = ['hand_name', 'hand_description', 'hand_image']
+
+
+class CurrencySerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Currency
+        fields = ['currency_name', 'currency_description', 'hand_image']
+
+
+class NationalInstrumentsSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = NationalInstruments
+        fields = ['national_name', 'national_description', 'national_image']
+
+
+class CultureKitchenSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = CultureKitchen
+        fields = ['kitchen_name', 'kitchen_description', 'kitchen_image']
+
+
+class GallerySerializers(serializers.ModelSerializer):
+    avg_rating = serializers.SerializerMethodField()
+    rating_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Gallery
+        fields = ['gallery_name', 'gallery_image', 'address', 'avg_rating', 'rating_count']
+
+    def get_avg_rating(self, obj):
+        return obj.get_avg_rating()
+
+    def get_rating_count(self, obj):
+        return obj.get_rating_count()
