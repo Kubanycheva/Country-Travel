@@ -42,16 +42,7 @@ admin.site.register(PopularReview, PopularReviewAdmin)
 admin.site.register(PopularPlaces)
 
 
-class ToTryImageInline(admin.TabularInline):
-    model = ToTryImage
-    extra = 3
-
-
-class ToTryAdmin(admin.ModelAdmin):
-    inlines = [ToTryImageInline]
-
-
-admin.site.register(ToTry, ToTryAdmin)
+admin.site.register(ToTry)
 
 # FOR GALLERY
 
@@ -107,13 +98,18 @@ class KitchenReviewInline(admin.TabularInline):
     extra = 1
 
 
+class KitchenLocationInline(admin.TabularInline):
+    model = KitchenLocation
+    extra = 1
+
+
 class KitchenImageInline(admin.TabularInline):
     model = KitchenImage
     extra = 1
 
 
 class KitchenAdmin(admin.ModelAdmin):
-    inlines = [KitchenReviewInline, KitchenImageInline]
+    inlines = [KitchenReviewInline, KitchenImageInline, KitchenLocationInline]
 
 
 admin.site.register(Kitchen, KitchenAdmin)
@@ -131,3 +127,4 @@ class EventCategoriesAdmin(admin.ModelAdmin):
 
 
 admin.site.register(EventCategories, EventCategoriesAdmin)
+admin.site.register(CultureCategory)
