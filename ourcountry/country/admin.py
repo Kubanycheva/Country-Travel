@@ -42,16 +42,7 @@ admin.site.register(PopularReview, PopularReviewAdmin)
 admin.site.register(PopularPlaces)
 
 
-class ToTryImageInline(admin.TabularInline):
-    model = ToTryImage
-    extra = 3
-
-
-class ToTryAdmin(admin.ModelAdmin):
-    inlines = [ToTryImageInline]
-
-
-admin.site.register(ToTry, ToTryAdmin)
+admin.site.register(ToTry)
 
 # FOR GALLERY
 
@@ -131,3 +122,4 @@ class EventCategoriesAdmin(admin.ModelAdmin):
 
 
 admin.site.register(EventCategories, EventCategoriesAdmin)
+admin.site.register(UserProfile)

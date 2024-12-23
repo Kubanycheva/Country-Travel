@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from .models import *
 from .serializers import *
+from rest_framework.generics import ListAPIView
+from rest_framework import permissions
 from rest_framework import viewsets, generics
 
 
@@ -72,10 +74,12 @@ class HotelsDetailAPIView(generics.RetrieveAPIView):
     serializer_class = HotelDetailSerializer
 
 
-class HotelsReviewViewSet(viewsets.ModelViewSet):
+class HotelsReviewViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = HotelsReview.objects.all()
     serializer_class = HotelsReviewSerializer
 
+    def get_queryset(self):
+        return HotelsReview.objects.filter(client_hotel=self.request.user)
 
 # for kitchen
 
@@ -99,3 +103,42 @@ class EventListAPiView(generics.ListAPIView):
     queryset = Event.objects.all()
     serializer_class = EventSerializers
 
+
+class CultureListAPiView(generics.ListAPIView):
+    queryset = Culture.objects.all()
+    serializer_class = CultureSerializers
+
+
+class GamesViewSet(viewsets.ModelViewSet):
+    queryset = Games.objects.all()
+    serializer_class = GamesSerializers
+
+
+class NationalClothesViewSet(viewsets.ModelViewSet):
+    queryset = NationalClothes.objects.all()
+    serializer_class = NationalClothesSerializers
+
+
+class CurrencyViewSet(viewsets.ModelViewSet):
+    queryset = Currency.objects.all()
+    serializer_class = CurrencySerializers
+
+
+class HandCraftsViewSet(viewsets.ModelViewSet):
+    queryset = HandCrafts.objects.all()
+    serializer_class = HandCraftsSerializers
+
+
+class NationalInstrumentsViewSet(viewsets.ModelViewSet):
+    queryset = NationalInstruments.objects.all()
+    serializer_class = NationalInstrumentsSerializers
+
+
+class CultureKitchenViewSet(viewsets.ModelViewSet):
+    queryset = CultureKitchen.objects.all()
+    serializer_class = CultureKitchenSerializers
+
+
+class GalleryListAPIView(generics.ListAPIView):
+    queryset = Gallery.objects.all()
+    serializer_class = GallerySerializers
