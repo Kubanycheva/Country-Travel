@@ -1,32 +1,26 @@
 from django.contrib import admin
 from .models import *
+from modeltranslation.admin import TranslationAdmin, TranslationInlineModelAdmin
 
 
-# FOR CHARLES DEO
-
-# FOR HOME
-
-
-class AttractionReviewInline(admin.TabularInline):
-    model = AttractionReview
-    extra = 1
-
-
-class AttractionsImageInline(admin.TabularInline):
-    model = AttractionsImage
-    extra = 1
-
-
-class AttractionsAdmin(admin.ModelAdmin):
-    inlines = [AttractionReviewInline, AttractionsImageInline]
+@admin.register(Region, Attractions, Home, PopularPlaces, ToTry, PlacesRegion, Culture,
+                Games, NationalClothes, HandCrafts, Currency, NationalInstruments,
+                CultureKitchen,
+                )
+class AllAdmin(TranslationAdmin):
+    class Media:
+        js = (
+            'http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js',
+            'http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js',
+            'modeltranslation/js/tabbed_translation_fields.js',
+        )
+        css = {
+            'screen': ('modeltranslation/css/tabbed_translation_fields.css',),
+        }
 
 
-admin.site.register(Home)
-admin.site.register(Attractions, AttractionsAdmin)
-
-# FOR REGIONS
-
-admin.site.register(Region)
+admin.site.register(AttractionsImage)
+admin.site.register(AttractionReview)
 
 
 class ReviewImageInline(admin.TabularInline):
@@ -39,12 +33,6 @@ class PopularReviewAdmin(admin.ModelAdmin):
 
 
 admin.site.register(PopularReview, PopularReviewAdmin)
-admin.site.register(PopularPlaces)
-
-
-admin.site.register(ToTry)
-
-# FOR GALLERY
 
 
 class GalleryReviewInline(admin.TabularInline):
@@ -52,25 +40,19 @@ class GalleryReviewInline(admin.TabularInline):
     extra = 1
 
 
-class GalleryAdmin(admin.ModelAdmin):
+@admin.register(Gallery)
+class GalleryAdmin(TranslationAdmin):
     inlines = [GalleryReviewInline]
 
-
-admin.site.register(Gallery, GalleryAdmin)
-
-
-# FOR CULTURE
-admin.site.register(Culture)
-admin.site.register(Games)
-admin.site.register(NationalClothes)
-admin.site.register(HandCrafts)
-admin.site.register(Currency)
-admin.site.register(NationalInstruments)
-
-
-# FOR FIVE_CATEGORIES
-
-admin.site.register(PlacesRegion)
+    class Media:
+        js = (
+            'http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js',
+            'http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js',
+            'modeltranslation/js/tabbed_translation_fields.js',
+        )
+        css = {
+            'screen': ('modeltranslation/css/tabbed_translation_fields.css',),
+        }
 
 
 class HotelsImageInlines(admin.TabularInline):
@@ -83,18 +65,28 @@ class HotelsReviewInline(admin.TabularInline):
     extra = 1
 
 
-class HotelsAdmin(admin.ModelAdmin):
+@admin.register(Hotels)
+class HotelsAdmin(TranslationAdmin):
     inlines = [HotelsReviewInline, HotelsImageInlines]
 
-
-admin.site.register(Hotels, HotelsAdmin)
-
-# FOR Hotels
-# for kitchen
+    class Media:
+        js = (
+            'http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js',
+            'http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js',
+            'modeltranslation/js/tabbed_translation_fields.js',
+        )
+        css = {
+            'screen': ('modeltranslation/css/tabbed_translation_fields.css',),
+        }
 
 
 class KitchenReviewInline(admin.TabularInline):
     model = KitchenReview
+    extra = 1
+
+
+class KitchenLocationInline(admin.TabularInline):
+    model = KitchenLocation
     extra = 1
 
 
@@ -103,13 +95,19 @@ class KitchenImageInline(admin.TabularInline):
     extra = 1
 
 
-class KitchenAdmin(admin.ModelAdmin):
-    inlines = [KitchenReviewInline, KitchenImageInline]
+@admin.register(Kitchen)
+class KitchenAdmin(TranslationAdmin):
+    inlines = [KitchenReviewInline, KitchenImageInline, KitchenLocationInline]
 
-
-admin.site.register(Kitchen, KitchenAdmin)
-admin.site.register(Favorite)
-admin.site.register(FavoriteItem)
+    class Media:
+        js = (
+            'http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js',
+            'http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js',
+            'modeltranslation/js/tabbed_translation_fields.js',
+        )
+        css = {
+            'screen': ('modeltranslation/css/tabbed_translation_fields.css',),
+        }
 
 
 class EventInlines(admin.TabularInline):
@@ -123,3 +121,7 @@ class EventCategoriesAdmin(admin.ModelAdmin):
 
 admin.site.register(EventCategories, EventCategoriesAdmin)
 admin.site.register(UserProfile)
+admin.site.register(CultureCategory)
+admin.site.register(Favorite)
+admin.site.register(FavoriteItem)
+

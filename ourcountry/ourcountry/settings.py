@@ -33,6 +33,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'modeltranslation',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -59,6 +60,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
+    'django.middleware.locale.LocaleMiddleware',
 ]
 
 ROOT_URLCONF = 'ourcountry.urls'
@@ -126,10 +128,20 @@ LANGUAGE_CODE = 'en'
 
 TIME_ZONE = 'Asia/Bishkek'
 
+USE_L10N = True
+
 USE_I18N = True
 
 USE_TZ = True
 
+LANGUAGES = (
+    ('en', 'English'),
+    ('ru', 'Russian'),
+)
+
+MODELTRANSLATION_DEFAULT_LANGUAGE = 'en'
+
+MODELTRANSLATION_LANGUAGES = ('en', 'ru')
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/

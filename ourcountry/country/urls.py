@@ -41,5 +41,6 @@ urlpatterns = [
     path('instruments/<int:pk>/', NationalInstrumentsViewSet.as_view({'get': "retrieve"}), name='instruments_detail'),
 
     path('gallery/', GalleryListAPIView.as_view(), name='gallery'),
+    path('kitchen_review/', KitchenReviewAPIView.as_view(), name='kitchen_review'),
 
 ]

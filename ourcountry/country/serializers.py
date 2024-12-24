@@ -13,30 +13,29 @@ class UserProfileSerializer(serializers.ModelSerializer):
 class UserProfileSimpleSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ['first_name', 'last_name', 'user_picture', 'from_user']
+        fields = ['id', 'first_name', 'last_name', 'user_picture', 'from_user']
 
 
 # FOR Attraction
 class AttractionReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = AttractionReview
-        fields = ['avg_rating', 'rating_count']
+        fields = ['id', 'avg_rating', 'rating_count']
 
 
 class AttractionsImageSerializers(serializers.ModelSerializer):
     class Meta:
         model = AttractionsImage
-        fields = ['image']
+        fields = ['id', 'image']
 
 
 class AttractionsListSerializer(serializers.ModelSerializer):
     avg_rating = serializers.SerializerMethodField()
     rating_count = serializers.SerializerMethodField()
-    image = AttractionsImageSerializers(read_only=True, many=True)
 
     class Meta:
         model = Attractions
-        fields = ['attraction_name', 'image', 'description', 'avg_rating', 'rating_count']
+        fields = ['id', 'attraction_name', 'main_image', 'description', 'avg_rating', 'rating_count']
 
     def get_avg_rating(self, obj):
         return obj.get_avg_rating()
@@ -51,7 +50,7 @@ class AttractionsDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Attractions
-        fields = ['attraction_name', 'image', 'description', 'rating_count']
+        fields = ['id', 'attraction_name', "main_image", 'image', 'description', 'rating_count']
 
     def get_rating_count(self, obj):
         return obj.get_rating_count()
@@ -62,7 +61,7 @@ class HomeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Home
-        fields = ['home_name', 'home_image', 'home_description', 'attractions_home']
+        fields = ['id', 'home_name', 'home_image', 'home_description', 'attractions_home']
 
 
 # FOR REGIONS
@@ -71,10 +70,14 @@ class HomeSerializer(serializers.ModelSerializer):
 class PopularPlacesListSerializer(serializers.ModelSerializer):
     avg_rating = serializers.SerializerMethodField()
     rating_count = serializers.SerializerMethodField()
+    region = serializers.SlugRelatedField(
+        slug_field='region_name',
+        queryset=Region.objects.all()
+    )
 
     class Meta:
         model = PopularPlaces
-        fields = ['popular_name', 'popular_image', 'avg_rating', 'rating_count']
+        fields = ['id', 'popular_name', 'popular_image', 'avg_rating', 'rating_count', 'region']
 
     def get_avg_rating(self, obj):
         return obj.get_avg_rating()
@@ -87,13 +90,13 @@ class ToTrySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ToTry
-        fields = ['to_name', 'description', 'images']
+        fields = ['id', 'to_name', 'first_description', 'second_description', 'image']
 
 
 class ReviewImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReviewImage
-        fields = ['image']
+        fields = ['id', 'image']
 
 
 class RegionSerializer(serializers.ModelSerializer):
@@ -102,7 +105,7 @@ class RegionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Region
-        fields = ['region_name', 'region_image', 'region_description', 'What_to_try', 'popular_places']
+        fields = ['id', 'region_name', 'region_image', 'region_description', 'What_to_try', 'popular_places']
 
 
 class PopularReviewSerializer(serializers.ModelSerializer):
@@ -114,7 +117,7 @@ class PopularReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PopularReview
-        fields = ['client', 'created_date', 'comment', 'static', 'avg_rating', 'rating_count', 'review_image']
+        fields = ['id', 'client', 'created_date', 'comment', 'static', 'avg_rating', 'rating_count', 'review_image']
 
     def get_avg_rating(self, obj):
         return obj.get_avg_rating()
@@ -131,7 +134,7 @@ class PopularPlacesDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PopularPlaces
-        fields = ['popular_name', 'popular_image', 'description', 'popular_reviews']
+        fields = ['id', 'popular_name', 'popular_image', 'description', 'popular_reviews']
 
 # FOR Hotels
 
@@ -139,17 +142,20 @@ class PopularPlacesDetailSerializer(serializers.ModelSerializer):
 class HotelImageSerializers(serializers.ModelSerializer):
     class Meta:
         model = HotelsImage
-        fields = ['image']
+        fields = ['id', 'image']
 
 
 class HotelsListSerializer(serializers.ModelSerializer):
     average_rating = serializers.SerializerMethodField()
     rating_count = serializers.SerializerMethodField()
-    hotel_image = HotelImageSerializers(read_only=True, many=True)
+    region = serializers.SlugRelatedField(
+        slug_field='region_name',
+        queryset=Region.objects.all()
+    )
 
     class Meta:
         model = Hotels
-        fields = ['name', 'hotel_image', 'average_rating', 'rating_count']
+        fields = ['id', 'name', 'main_image', 'average_rating', 'rating_count', 'region']
 
     def get_average_rating(self, obj):
         return obj.get_average_rating()
@@ -163,8 +169,8 @@ class HotelDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Hotels
-        fields = ['name', 'hotel_image', 'address', 'bedroom', 'bathroom', 'cars_bikes',
-                  'pets', 'amenities', 'safety_hygiene', 'price_short_period',
+        fields = ['id', 'name', 'hotel_image', 'address', 'bedroom', 'bathroom', 'cars_bikes',
+                  'pets', 'amenities', 'safety_and_hygiene', 'price_short_period',
                   'price_medium_period', 'price_long_period']
 
 
@@ -178,17 +184,27 @@ class HotelsReviewSerializer(serializers.ModelSerializer):
 class KitchenImageSerializers(serializers.ModelSerializer):
     class Meta:
         model = KitchenImage
-        fields = ['image']
+        fields = ['id', 'image']
+
+
+class KitchenLocationSerializers(serializers.ModelSerializer):
+    kitchen = serializers.SlugRelatedField(
+        slug_field='kitchen_name',
+        queryset=Kitchen.objects.all()
+    )
+
+    class Meta:
+        model = KitchenLocation
+        fields = ['id', 'address', 'Website', "email", 'phone_number', 'kitchen']
 
 
 class KitchenListSerializer(serializers.ModelSerializer):
     average_rating = serializers.SerializerMethodField()
     rating_count = serializers.SerializerMethodField()
-    kitchen_image = KitchenImageSerializers()
 
     class Meta:
         model = Kitchen
-        fields = ['kitchen_name', 'price', 'type_of_cafe', 'average_rating', 'rating_count', 'kitchen_image']
+        fields = ['id', 'kitchen_name', 'price', 'type_of_cafe', 'average_rating', 'rating_count', 'main_image']
 
     def get_average_rating(self, obj):
         return obj.get_average_rating()
@@ -205,11 +221,13 @@ class KitchenDetailSerializers(serializers.ModelSerializer):
     service_rating = serializers.SerializerMethodField()
     price_rating = serializers.SerializerMethodField()
     atmosphere_rating = serializers.SerializerMethodField()
+    kitchen = KitchenLocationSerializers(read_only=True, many=True)
 
     class Meta:
         model = Kitchen
-        fields = ['kitchen_name', 'kitchen_image', 'price', 'specialized_menu', 'meal_time', 'description',
-                  'average_rating', 'rating_count', 'nutrition_rating', 'service_rating', 'price_rating', 'atmosphere_rating']
+        fields = ['id', 'kitchen_name', 'main_image', 'kitchen_image', 'price', 'specialized_menu', 'meal_time', 'description',
+                  'average_rating', 'rating_count', 'nutrition_rating', 'service_rating', 'price_rating',
+                  'atmosphere_rating', 'kitchen']
 
     def get_average_rating(self, obj):
         return obj.get_average_rating()
@@ -239,7 +257,7 @@ class KitchenReviewSerializer(serializers.ModelSerializer):
 class EventCategorySerializers(serializers.ModelSerializer):
     class Meta:
         model = EventCategories
-        fields = ['category']
+        fields = ['id', 'category']
 
 
 class EventSerializers(serializers.ModelSerializer):
@@ -247,49 +265,65 @@ class EventSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = Event
-        fields = ['title', 'image', 'category', 'date', 'time', 'address', 'price']
+        fields = ['id', 'title', 'image', 'category', 'date', 'time', 'address', 'price']
 
 
 class CultureSerializers(serializers.ModelSerializer):
     class Meta:
         model = Culture
-        fields = ['culture_name', 'culture_description', 'culture_image']
+        fields = ['id', 'culture_name', 'culture_description', 'culture_image']
+
+
+class CultureSimpleSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = CultureCategory
+        fields = ['id', 'culture_name']
 
 
 class GamesSerializers(serializers.ModelSerializer):
+    culture = CultureSimpleSerializers(read_only=True, many=True )
+
     class Meta:
         model = Games
-        fields = ['games_name', 'games_description', 'games_image']
+        fields = ['id', "culture", 'games_name', 'games_description', 'games_image']
 
 
 class NationalClothesSerializers(serializers.ModelSerializer):
     class Meta:
         model = NationalClothes
-        fields = ['clothes_name', 'clothes_description', 'clothes_image']
+        fields = ['id', "culture", 'clothes_name', 'clothes_description', 'clothes_image']
 
 
 class HandCraftsSerializers(serializers.ModelSerializer):
+    culture = CultureSimpleSerializers(read_only=True)
+
     class Meta:
         model = HandCrafts
-        fields = ['hand_name', 'hand_description', 'hand_image']
+        fields = ["id", 'culture', 'hand_name', 'hand_description', 'hand_image']
 
 
 class CurrencySerializers(serializers.ModelSerializer):
+    culture = CultureSimpleSerializers(read_only=True)
+
     class Meta:
         model = Currency
-        fields = ['currency_name', 'currency_description', 'hand_image']
+        fields = ['id',  "culture", 'currency_name', 'currency_description', 'hand_image']
 
 
 class NationalInstrumentsSerializers(serializers.ModelSerializer):
+    culture = CultureSimpleSerializers(read_only=True)
+
     class Meta:
         model = NationalInstruments
-        fields = ['national_name', 'national_description', 'national_image']
+        fields = ['id',  "culture", 'national_name', 'national_description', 'national_image']
 
 
 class CultureKitchenSerializers(serializers.ModelSerializer):
+    culture = CultureSimpleSerializers(read_only=True)
+
     class Meta:
         model = CultureKitchen
-        fields = ['kitchen_name', 'kitchen_description', 'kitchen_image']
+        fields = ['id',  "culture", 'kitchen_name', 'kitchen_description', 'kitchen_image']
 
 
 class GallerySerializers(serializers.ModelSerializer):
@@ -298,7 +332,7 @@ class GallerySerializers(serializers.ModelSerializer):
 
     class Meta:
         model = Gallery
-        fields = ['gallery_name', 'gallery_image', 'address', 'avg_rating', 'rating_count']
+        fields = ['id', 'gallery_name', 'gallery_image', 'address', 'avg_rating', 'rating_count']
 
     def get_avg_rating(self, obj):
         return obj.get_avg_rating()

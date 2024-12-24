@@ -14,6 +14,15 @@ class UserProfile(AbstractUser):
 # FOR HOME
 
 
+class Region(models.Model):
+    region_name = models.CharField(max_length=55)
+    region_image = models.ImageField(upload_to='region_images')
+    region_description = models.TextField()
+
+    def __str__(self):
+        return self.region_name
+
+
 class Home(models.Model):
     home_name = models.CharField(max_length=55)
     home_image = models.ImageField(upload_to='home_images', null=True, blank=True)
@@ -26,6 +35,10 @@ class Home(models.Model):
 class Attractions(models.Model):
     attraction_name = models.CharField(max_length=155)
     description = models.TextField()
+    region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='region')
+    main_image = models.ImageField(upload_to='main_image/', null=True, blank=True)
+
+
 
     def __str__(self):
         return self.attraction_name
@@ -61,15 +74,6 @@ class AttractionReview(models.Model):
         return f'{self.client_home}'
 
 # FOR REGIONS
-
-
-class Region(models.Model):
-    region_name = models.CharField(max_length=55)
-    region_image = models.ImageField(upload_to='region_images')
-    region_description = models.TextField()
-
-    def __str__(self):
-        return self.region_name
 
 
 class PopularPlaces(models.Model):
@@ -141,6 +145,10 @@ class ToTry(models.Model):
     to_name = models.CharField(max_length=200)
     description = models.TextField()
     image = models.ImageField(upload_to='to_try_image/', null=True, blank=True)
+    first_description = models.TextField()
+    second_description = models.TextField()
+    image = models.ImageField(upload_to='to_try_image/', null=True, blank=True)
+
 
     def __str__(self):
         return self.to_name
@@ -173,17 +181,32 @@ class PlacesRegion(models.Model):
 class Hotels(models.Model):
     name = models.CharField(max_length=155)
     description = models.TextField()
+    main_image = models.ImageField(upload_to='main_image/', null=True, blank=True)
     region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='hotels_region')
     address = models.CharField(max_length=100)
     bedroom = models.PositiveIntegerField(default=1)
     bathroom = models.PositiveIntegerField(default=1)
     cars_bikes = models.CharField(max_length=50)
     pets = models.PositiveIntegerField()
-    amenities = models.TextField()
-    safety_hygiene = models.TextField()
     price_short_period = models.PositiveIntegerField()
     price_medium_period = models.PositiveIntegerField()
     price_long_period = models.PositiveIntegerField()
+
+    AMENITIES = (
+        ('Kitchen', 'Kitchen'),
+        ('Air Conditioner', 'Air Conditioner'),
+        ("Television with Netflix", 'Television with Netflix'),
+        ('Free Wireless Internet', 'Free Wireless Internet'),
+        ('Balcony or Patio', 'Balcony or Patio')
+    )
+    amenities = MultiSelectField(choices=AMENITIES)
+    SAFETY_AND_HYGIENE = (
+        ('Daily Cleaning', 'Daily Cleaning'),
+        ('Disinfections and Sterilizations', 'Disinfections and Sterilizations'),
+        ("Fire Extinguishers", 'Fire Extinguishers'),
+        ('Smoke Detectors', 'Smoke Detectors'),
+    )
+    safety_and_hygiene = MultiSelectField(choices=SAFETY_AND_HYGIENE)
 
     def __str__(self):
         return self.name
@@ -222,6 +245,7 @@ class HotelsReview(models.Model):
 class Kitchen(models.Model):
     kitchen_name = models.CharField(max_length=155)
     description = models.TextField()
+    main_image = models.ImageField(upload_to='main_image/', null=True, blank=True)
     kitchen_region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='hotels_region_image')
     price = models.PositiveIntegerField()
     specialized_menu = models.TextField()
@@ -293,6 +317,14 @@ class Kitchen(models.Model):
         return 0
 
 
+class KitchenLocation(models.Model):
+    address = models.TextField()
+    Website = models.URLField(null=True, blank=True)
+    email = models.CharField(max_length=60)
+    phone_number = PhoneNumberField(null=True, blank=True, region='KG')
+    kitchen = models.ForeignKey(Kitchen, on_delete=models.CASCADE, related_name='kitchen') #inline
+
+
 class KitchenImage(models.Model):
     kitchen = models.ForeignKey(Kitchen, on_delete=models.CASCADE, related_name='kitchen_image')
     image = models.ImageField(upload_to='kitchen_images/', null=True, blank=True)
@@ -314,7 +346,6 @@ class KitchenReview(models.Model):
 
 # FOR event
 #  7 categories
-
 
 class EventCategories(models.Model):
     category = models.CharField(max_length=20)
@@ -378,10 +409,19 @@ class Culture(models.Model):
         return self.culture_name
 
 
+class CultureCategory(models.Model):
+    culture_name = models.CharField(max_length=35)
+
+    def __str__(self):
+        return self.culture_name
+
+
 class Games(models.Model):
     games_name = models.CharField(max_length=300)
     games_description = models.TextField()
     games_image = models.ImageField(upload_to='games_images')
+    culture = models.ForeignKey(CultureCategory, on_delete=models.CASCADE)
+
 
     def __str__(self):
         return self.games_name
@@ -391,6 +431,8 @@ class NationalClothes(models.Model):
     clothes_name = models.CharField(max_length=300)
     clothes_description = models.TextField()
     clothes_image = models.ImageField(upload_to='clothes_images')
+    culture = models.ForeignKey(CultureCategory, on_delete=models.CASCADE)
+
 
     def __str__(self):
         return self.clothes_name
@@ -400,6 +442,7 @@ class HandCrafts(models.Model):
     hand_name = models.CharField(max_length=300)
     hand_description = models.TextField()
     hand_image = models.ImageField(upload_to='hand_images')
+    culture = models.ForeignKey(CultureCategory, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.hand_name
@@ -408,7 +451,8 @@ class HandCrafts(models.Model):
 class Currency(models.Model):
     currency_name = models.CharField(max_length=300)
     currency_description = models.TextField()
-    hand_image = models.ImageField(upload_to='currency_images')
+    currency_image = models.ImageField(upload_to='currency_images')
+    culture = models.ForeignKey(CultureCategory, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.currency_name
@@ -418,6 +462,8 @@ class NationalInstruments(models.Model):
     national_name = models.CharField(max_length=300)
     national_description = models.TextField()
     national_image = models.ImageField(upload_to='national_images')
+    culture = models.ForeignKey(CultureCategory, on_delete=models.CASCADE)
+
 
     def __str__(self):
         return self.national_name
@@ -427,12 +473,14 @@ class CultureKitchen(models.Model):
     kitchen_name = models.CharField(max_length=300)
     kitchen_description = models.TextField()
     kitchen_image = models.ImageField(upload_to='kitchen_images')
+    culture = models.ForeignKey(CultureCategory, on_delete=models.CASCADE)
+
 
     def __str__(self):
         return self.kitchen_name
 
-
 # FOR FAVORITE
+
 
 class Favorite(models.Model):
     user = models.ForeignKey(Home, on_delete=models.CASCADE, related_name='regions')

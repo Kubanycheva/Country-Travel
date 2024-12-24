@@ -142,3 +142,8 @@ class CultureKitchenViewSet(viewsets.ModelViewSet):
 class GalleryListAPIView(generics.ListAPIView):
     queryset = Gallery.objects.all()
     serializer_class = GallerySerializers
+
+
+class  KitchenReviewAPIView(generics.ListAPIView):
+    queryset = KitchenReview.objects.all()
+    serializer_class = KitchenReviewSerializer
