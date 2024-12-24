@@ -137,11 +137,12 @@ USE_TZ = True
 LANGUAGES = (
     ('en', 'English'),
     ('ru', 'Russian'),
+    ('ar', 'Arabic'),
 )
 
 MODELTRANSLATION_DEFAULT_LANGUAGE = 'en'
 
-MODELTRANSLATION_LANGUAGES = ('en', 'ru')
+MODELTRANSLATION_LANGUAGES = ('en', 'ru', 'ar')
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
