@@ -36,7 +36,7 @@ class PlacesRegionTranslationOptions(TranslationOptions):
 
 @register(Hotels)
 class HotelsTranslationOptions(TranslationOptions):
-    fields = ('name', 'description', 'address', 'cars_bikes')
+    fields = ('name', 'description', 'address', 'cars', 'bikes')
 
 
 @register(Kitchen)

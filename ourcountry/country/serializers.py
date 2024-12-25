@@ -102,10 +102,15 @@ class ReviewImageSerializer(serializers.ModelSerializer):
 class RegionSerializer(serializers.ModelSerializer):
     popular_places = PopularPlacesListSerializer(read_only=True, many=True)
     What_to_try = ToTrySerializer(read_only=True, many=True)
+    region_category = serializers.SlugRelatedField(
+        slug_field='region_category',
+        queryset=Region_Categoty.objects.all()
+
+    )
 
     class Meta:
         model = Region
-        fields = ['id', 'region_name', 'region_image', 'region_description', 'What_to_try', 'popular_places']
+        fields = ['id', 'region_name', 'region_image', 'region_description', 'What_to_try', 'popular_places', 'region_category']
 
 
 class PopularReviewSerializer(serializers.ModelSerializer):
@@ -169,7 +174,7 @@ class HotelDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Hotels
-        fields = ['id', 'name', 'hotel_image', 'address', 'bedroom', 'bathroom', 'cars_bikes',
+        fields = ['id', 'name', 'hotel_image', 'address', 'bedroom', 'bathroom', 'cars', 'bikes',
                   'pets', 'amenities', 'safety_and_hygiene', 'price_short_period',
                   'price_medium_period', 'price_long_period']
 
@@ -281,7 +286,7 @@ class CultureSimpleSerializers(serializers.ModelSerializer):
 
 
 class GamesSerializers(serializers.ModelSerializer):
-    culture = CultureSimpleSerializers(read_only=True, many=True )
+    culture = CultureSimpleSerializers(read_only=True)
 
     class Meta:
         model = Games

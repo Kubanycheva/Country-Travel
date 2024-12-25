@@ -14,10 +14,25 @@ class UserProfile(AbstractUser):
 # FOR HOME
 
 
+class Region_Categoty(models.Model):
+    CHOICES = (
+        ('Chui', 'Chui'),
+        ('Talas', 'Talas'),
+        ('Batken', 'Batken'),
+        ('Osh', 'Osh'),
+        ('Naryn', 'Naryn'),
+        ('Issyk-Kul', 'Issyk-Kul'),
+        ('Jalal-Abad', 'Jalal-Abad'),
+    )
+    region_category = models.CharField(max_length=20, choices=CHOICES)
+
+    def __str__(self):
+        return self.region_category
 class Region(models.Model):
     region_name = models.CharField(max_length=55)
     region_image = models.ImageField(upload_to='region_images')
     region_description = models.TextField()
+    region_category = models.ForeignKey(Region_Categoty, on_delete=models.CASCADE, related_name='region')
 
     def __str__(self):
         return self.region_name
@@ -167,7 +182,7 @@ class PlacesRegion(models.Model):
     created_date = models.DateField(auto_now_add=True)
 
     def __str__(self):
-        return self.user_name
+        return f'{self.user_name}'
 
     def get_avg_rating(self):
         ratings = self.reviews.all()
@@ -178,6 +193,7 @@ class PlacesRegion(models.Model):
 
 # FOR Hotels
 
+
 class Hotels(models.Model):
     name = models.CharField(max_length=155)
     description = models.TextField()
@@ -186,7 +202,8 @@ class Hotels(models.Model):
     address = models.CharField(max_length=100)
     bedroom = models.PositiveIntegerField(default=1)
     bathroom = models.PositiveIntegerField(default=1)
-    cars_bikes = models.CharField(max_length=50)
+    cars = models.PositiveIntegerField(default=1)
+    bikes = models.PositiveIntegerField(default=1)
     pets = models.PositiveIntegerField()
     price_short_period = models.PositiveIntegerField()
     price_medium_period = models.PositiveIntegerField()

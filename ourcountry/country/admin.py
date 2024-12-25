@@ -124,4 +124,5 @@ admin.site.register(UserProfile)
 admin.site.register(CultureCategory)
 admin.site.register(Favorite)
 admin.site.register(FavoriteItem)
+admin.site.register(Region_Categoty)
 
