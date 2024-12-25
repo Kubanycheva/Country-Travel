@@ -199,6 +199,7 @@ class Hotels(models.Model):
     description = models.TextField()
     main_image = models.ImageField(upload_to='main_image/', null=True, blank=True)
     region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='hotels_region')
+    popular_places = models.ForeignKey(PopularPlaces, on_delete=models.CASCADE)
     address = models.CharField(max_length=100)
     bedroom = models.PositiveIntegerField(default=1)
     bathroom = models.PositiveIntegerField(default=1)
@@ -208,6 +209,7 @@ class Hotels(models.Model):
     price_short_period = models.PositiveIntegerField()
     price_medium_period = models.PositiveIntegerField()
     price_long_period = models.PositiveIntegerField()
+
 
     AMENITIES = (
         ('Kitchen', 'Kitchen'),

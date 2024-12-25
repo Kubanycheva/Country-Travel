@@ -157,10 +157,14 @@ class HotelsListSerializer(serializers.ModelSerializer):
         slug_field='region_name',
         queryset=Region.objects.all()
     )
+    popular_places = serializers.SlugRelatedField(
+        slug_field='popular_name',
+        queryset=PopularPlaces.objects.all()
+    )
 
     class Meta:
         model = Hotels
-        fields = ['id', 'name', 'main_image', 'average_rating', 'rating_count', 'region']
+        fields = ['id', 'name', 'main_image', 'average_rating', 'rating_count', 'region', 'popular_places']
 
     def get_average_rating(self, obj):
         return obj.get_average_rating()
