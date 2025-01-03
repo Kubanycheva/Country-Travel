@@ -2,6 +2,9 @@ from django.urls import path, include
 from .views import *
 from rest_framework import routers
 
+path('register/', RegisterView.as_view(), name='register'),
+path('login/', CustomLoginView.as_view(), name='login'),
+path('logout/', LogoutView.as_view(), name='logout'),
 
 # FOR CHARLES DEO
 router = routers.DefaultRouter()

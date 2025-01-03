@@ -39,7 +39,6 @@ class Attractions(models.Model):
     main_image = models.ImageField(upload_to='main_image/', null=True, blank=True)
 
 
-
     def __str__(self):
         return self.attraction_name
 
@@ -234,7 +233,6 @@ class HotelsReview(models.Model):
     comment = models.TextField()
     hotel = models.ForeignKey(Hotels, on_delete=models.CASCADE, related_name='hotel_reviews')  # inline
     stars = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], null=True, blank=True)
-
 
     def __str__(self):
         return f'{self.client_hotel}'
