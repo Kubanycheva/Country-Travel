@@ -45,39 +45,62 @@ class CustomLoginView(TokenObtainPairView):
     serializer_class = LoginSerializer
 
     def post(self, request, *args, **kwargs):
-        # Сериализация входных данных
-        serializer = self.get_serializer(data=request.data)
+        # Проверяем, что все необходимые поля присутствуют
+        required_fields = ['email', 'password']
+        for field in required_fields:
+            if field not in request.data:
+                return Response(
+                    {'detail': f'Поле {field} обязательно'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        serializer = self.get_serializer(
+            data=request.data,
+            context={'request': request}
+        )
+
         try:
             serializer.is_valid(raise_exception=True)
-        except Exception:
-            return Response({'detail': 'Неверные учетные данные'}, status=status.HTTP_401_UNAUTHORIZED)
+            user = serializer.validated_data['user']
 
-        # Извлекаем пользователя
-        user = serializer.validated_data['user']
+            # Генерация токенов
+            refresh = RefreshToken.for_user(user)
+            access = refresh.access_token
 
-        # Генерация токенов
-        refresh = RefreshToken.for_user(user)
-        access = refresh.access_token
+            response_data = {
+                'access': str(access),
+                'refresh': str(refresh),
+                'user': {
+                    'email': user.email,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                }
+            }
 
-        # Подготовка ответа
-        response = Response(serializer.data, status=status.HTTP_200_OK)
+            response = Response(response_data, status=status.HTTP_200_OK)
 
-        # Сохранение токенов в cookies
-        response.set_cookie(
-            key='access_token',
-            value=str(access),
-            httponly=True,
-            secure=True,  # Для продакшн-среды
-            samesite='Strict',
-        )
-        response.set_cookie(
-            key='refresh_token',
-            value=str(refresh),
-            httponly=True,
-            secure=True,  # Для продакшн-среды
-            samesite='Strict',
-        )
-        return response
+            # Установка cookies
+            response.set_cookie(
+                key='access_token',
+                value=str(access),
+                httponly=True,
+                secure=False,
+                samesite='Strict',
+            )
+            response.set_cookie(
+                key='refresh_token',
+                value=str(refresh),
+                httponly=True,
+                secure=False,
+                samesite='Strict',
+            )
+            return response
+
+        except serializers.ValidationError as e:
+            return Response(
+                {'detail': e.detail},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
 
 class LogoutView(generics.GenericAPIView):

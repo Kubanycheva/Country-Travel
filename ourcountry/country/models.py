@@ -36,7 +36,7 @@ class UserProfile(AbstractUser):
     birth_date = models.DateField(null=True, blank=True)
 
     USERNAME_FIELD = 'email'  # Устанавливаем email в качестве идентификатора
-    REQUIRED_FIELDS = []  # Поля, обязательные при создании суперпользователя
+    REQUIRED_FIELDS = ['first_name', 'last_name']  # Поля, обязательные при создании суперпользователя
 
     objects = UserProfileManager()
 
