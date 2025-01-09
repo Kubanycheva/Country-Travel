@@ -1,15 +1,49 @@
-from django.db import models
-from django.contrib.auth.models import AbstractUser
-from phonenumber_field.modelfields import PhoneNumberField
 from multiselectfield import MultiSelectField
+from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.db import models
+from phonenumber_field.modelfields import PhoneNumberField
 
 
-# FOR CHARLES DEO
+class UserProfileManager(BaseUserManager):
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError('У пользователя должен быть указан email')
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+
+        if not extra_fields.get('is_staff'):
+            raise ValueError('Суперпользователь должен иметь is_staff=True.')
+        if not extra_fields.get('is_superuser'):
+            raise ValueError('Суперпользователь должен иметь is_superuser=True.')
+
+        return self.create_user(email, password, **extra_fields)
+
 
 class UserProfile(AbstractUser):
+    username = None  # Убираем поле username
+    email = models.EmailField(unique=True)  # Уникальный email для аутентификации
     phone_number = PhoneNumberField(region='KG', null=True, blank=True)
-    user_picture = models.ImageField(upload_to='user_pictures', null=True, blank=True)
+    user_picture = models.ImageField(upload_to='user_pictures/', null=True, blank=True)
     from_user = models.CharField(max_length=62)
+    cover_photo = models.ImageField(upload_to='cover_photo/', null=True, blank=True)
+    birth_date = models.DateField(null=True, blank=True)
+
+    USERNAME_FIELD = 'email'  # Устанавливаем email в качестве идентификатора
+    REQUIRED_FIELDS = []  # Поля, обязательные при создании суперпользователя
+
+    objects = UserProfileManager()
+
+    def __str__(self):
+        return f'{self.first_name} {self.last_name}'
+
+
 
 # FOR HOME
 
@@ -28,6 +62,8 @@ class Region_Categoty(models.Model):
 
     def __str__(self):
         return self.region_category
+
+
 class Region(models.Model):
     region_name = models.CharField(max_length=55)
     region_image = models.ImageField(upload_to='region_images')
@@ -82,28 +118,62 @@ class AttractionsImage(models.Model):
 class AttractionReview(models.Model):
     client_home = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='home_reviews')
     attractions = models.ForeignKey(Attractions, on_delete=models.CASCADE, related_name='attractions_review')
-    comment = models.TextField()
+    attraction_comment = models.TextField()
     rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], verbose_name='Рейтинг')
+    created_date = models.DateField(auto_now_add=True)
 
     def __str__(self):
         return f'{self.client_home}'
 
+
+    def get_static(self):
+        related_reviews = AttractionReview.objects.all()
+        count_5 = related_reviews.filter(rating=5).count()
+        count_4 = related_reviews.filter(rating=4).count()
+        count_3 = related_reviews.filter(rating=3).count()
+        count_2 = related_reviews.filter(rating=2).count()
+        count_1 = related_reviews.filter(rating=1).count()
+        return (f"exellent: {count_5} " 
+                f"good: {count_4} "
+                f"not bad: {count_3} "
+                f"bad: {count_2} "
+                f"terribly: {count_1} ")
+
+    def get_avg_rating(self):
+        ratings = AttractionReview.objects.all()
+        valid_ratings = [i.rating for i in ratings if i.rating is not None]
+        if valid_ratings:
+            return round(sum(valid_ratings) / len(valid_ratings), 1)
+        return 0
+
+    def get_rating_count(self):
+        ratings = AttractionReview.objects.all()
+        if ratings.exists():
+            return ratings.count()
+        return 0
+
+
+class AttractionsReviewImage(models.Model):
+    attractions = models.ForeignKey(AttractionReview, on_delete=models.CASCADE, related_name='attraction_review_image')
+    image = models.ImageField(upload_to='attraction_review_image/', null=True, blank=True)
+
+
 # FOR REGIONS
 
-
 class PopularPlaces(models.Model):
-    popular_name = models.CharField(max_length=155)
+    popular_name = models.CharField(max_length=250)
     popular_image = models.ImageField(upload_to='popular_images')
     description = models.TextField()
     region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='popular_places')
 
     def __str__(self):
-        return self.popular_name
+        return f'{self.popular_name}'
 
     def get_avg_rating(self):
         ratings = self.popular_reviews.all()
-        if ratings.exists():
-            return round(sum(i.rating for i in ratings) / ratings.count(), 1)
+        valid_ratings = [i.rating for i in ratings if i.rating is not None]
+        if valid_ratings:
+            return round(sum(valid_ratings) / len(valid_ratings), 1)
         return 0
 
     def get_rating_count(self):
@@ -116,8 +186,8 @@ class PopularPlaces(models.Model):
 class PopularReview(models.Model):
     client = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     popular = models.ForeignKey(PopularPlaces, on_delete=models.CASCADE,  related_name='popular_reviews')
-    comment = models.TextField()  #inline
-    rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], verbose_name='Рейтинг')
+    comment = models.TextField()
+    rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], null=True, blank=True, verbose_name='Рейтинг')
     created_date = models.DateField(auto_now_add=True)
 
     def __str__(self):
@@ -138,9 +208,10 @@ class PopularReview(models.Model):
                 f"terribly: {count_1} ")
 
     def get_avg_rating(self):
-        ratings = PopularReview.objects.all()
-        if ratings.exists():
-            return round(sum(i.rating for i in ratings) / ratings.count(), 1)
+        ratings = self.popularreview_set.all()
+        valid_ratings = [i.rating for i in ratings if i.rating is not None]
+        if valid_ratings:
+            return round(sum(valid_ratings) / len(valid_ratings), 1)
         return 0
 
     def get_rating_count(self):
@@ -173,7 +244,7 @@ class ToTry(models.Model):
 # for places
 
 
-class PlacesRegion(models.Model):
+class RegionReview(models.Model):
     user_name = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='reviews')
     text = models.TextField(null=True, blank=True)
@@ -231,11 +302,11 @@ class Hotels(models.Model):
         return self.name
 
     def get_average_rating(self):
-        ratings = self.hotel_reviews.all()
-        if ratings.exists():
-            return round(sum(rating.stars for rating in ratings) / ratings.count(), 1)
+        ratings = HotelsReview.objects.all()
+        valid_ratings = [i.rating for i in ratings if i.rating is not None]
+        if valid_ratings:
+            return round(sum(valid_ratings) / len(valid_ratings), 1)
         return 0
-
     def get_rating_count(self):
         ratings = self.hotel_reviews.all()
         if ratings.exists():
@@ -252,11 +323,42 @@ class HotelsReview(models.Model):
     client_hotel = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='client_hotel')
     comment = models.TextField()
     hotel = models.ForeignKey(Hotels, on_delete=models.CASCADE, related_name='hotel_reviews')  # inline
-    stars = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], null=True, blank=True)
-
+    rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], null=True, blank=True)
+    created_date = models.DateField(auto_now_add=True)
 
     def __str__(self):
         return f'{self.client_hotel}'
+
+    def get_static(self):
+        related_reviews = HotelsReview.objects.all()
+        count_5 = related_reviews.filter(rating=5).count()
+        count_4 = related_reviews.filter(rating=4).count()
+        count_3 = related_reviews.filter(rating=3).count()
+        count_2 = related_reviews.filter(rating=2).count()
+        count_1 = related_reviews.filter(rating=1).count()
+        return (f"exellent: {count_5} "
+                f"good: {count_4} "
+                f"not bad: {count_3} "
+                f"bad: {count_2} "
+                f"terribly: {count_1} ")
+
+    def get_avg_rating(self):
+        ratings = HotelsReview.objects.all()
+        valid_ratings = [i.rating for i in ratings if i.rating is not None]
+        if valid_ratings:
+            return round(sum(valid_ratings) / len(valid_ratings), 1)
+        return 0
+
+    def get_rating_count(self):
+        ratings = HotelsReview.objects.all()
+        if ratings.exists():
+            return ratings.count()
+        return 0
+
+
+class HotelsReviewImage(models.Model):
+    hotel_review = models.ForeignKey(HotelsReview, on_delete=models.CASCADE, related_name='hotel_review_image')
+    image = models.ImageField(upload_to='hotel_review_image/', null=True, blank=True)
 
 # for kitchen
 
@@ -358,9 +460,41 @@ class KitchenReview(models.Model):
     service_rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], null=True, blank=True)
     price_rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], null=True, blank=True)
     atmosphere_rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], null=True, blank=True)
+    created_at = models.DateField(auto_now_add=True)
+
 
     def __str__(self):
         return f'{self.client_kitchen}'
+
+    def get_static(self):
+        related_reviews = KitchenReview.objects.all()
+        count_5 = related_reviews.filter(rating=5).count()
+        count_4 = related_reviews.filter(rating=4).count()
+        count_3 = related_reviews.filter(rating=3).count()
+        count_2 = related_reviews.filter(rating=2).count()
+        count_1 = related_reviews.filter(rating=1).count()
+        return (f"exellent: {count_5} " 
+                f"good: {count_4} "
+                f"not bad: {count_3} "
+                f"bad: {count_2} "
+                f"terribly: {count_1} ")
+
+    def get_avg_rating(self):
+        ratings = KitchenReview.objects.all()
+        if ratings.exists():
+            return round(sum(i.rating for i in ratings) / ratings.count(), 1)
+        return 0
+
+    def get_rating_count(self):
+        ratings = KitchenReview.objects.all()
+        if ratings.exists():
+            return ratings.count()
+        return 0
+
+
+class KitchenReviewImage(models.Model):
+    review = models.ForeignKey(KitchenReview, on_delete=models.CASCADE, related_name='kitchen_review_image')
+    image = models.ImageField(upload_to='kitchen_review_image/', null=True, blank=True)
 
 
 # FOR event
@@ -412,10 +546,15 @@ class GalleryReview(models.Model):
     comment = models.TextField()
     gallery = models.ForeignKey(Gallery, on_delete=models.CASCADE, related_name='gallery_reviews') #inline
     rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], null=True, blank=True)
+    created_date = models.DateField(auto_now_add=True)
 
     def __str__(self):
         return f'{self.client_gallery}'
 
+
+class GalleryReviewImage(models.Model):
+    gallery = models.ForeignKey(GalleryReview, on_delete=models.CASCADE, related_name='gallery_review_image')
+    image = models.ImageField(upload_to='gallery_review_image/', null=True, blank=True)
 
 # FOR CULTURE
 
@@ -491,22 +630,25 @@ class NationalInstruments(models.Model):
 class CultureKitchen(models.Model):
     kitchen_name = models.CharField(max_length=300)
     kitchen_description = models.TextField()
-    kitchen_image = models.ImageField(upload_to='kitchen_images')
     culture = models.ForeignKey(CultureCategory, on_delete=models.CASCADE)
-
 
     def __str__(self):
         return self.kitchen_name
+
+
+class CultureKitchenImage(models.Model):
+    culture_kitchen = models.ForeignKey(CultureKitchen, on_delete=models.CASCADE, related_name='culture_kitchen_image')
+    image = models.ImageField(upload_to='culture_kitchen_image/', null=True, blank=True)
+
 
 # FOR FAVORITE
 
 
 class Favorite(models.Model):
-    user = models.ForeignKey(Home, on_delete=models.CASCADE, related_name='regions')
-    country_favorite = models.CharField(max_length=255)
+    user = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='favorite')
 
     def __str__(self):
-        return self.country_favorite
+        return self.user
 
 
 class FavoriteItem(models.Model):
@@ -514,3 +656,4 @@ class FavoriteItem(models.Model):
     attractions = models.ForeignKey(Attractions, on_delete=models.CASCADE, null=True, blank=True)
     popular_region = models.ForeignKey(PopularPlaces, on_delete=models.CASCADE, null=True, blank=True)
     gallery = models.ForeignKey(Gallery, on_delete=models.CASCADE, null=True, blank=True)
+    hotels = models.ForeignKey(Hotels, on_delete=models.CASCADE, related_name='favorite_hotel')

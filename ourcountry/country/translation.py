@@ -1,4 +1,4 @@
-from .models import (Region, Home, Attractions, PopularPlaces, ToTry,  PlacesRegion, Hotels, Kitchen,
+from .models import (Region, Home, Attractions, PopularPlaces, ToTry, Hotels, Kitchen,
                      Gallery, Culture, Games, NationalClothes, HandCrafts, Currency, NationalInstruments,
                      CultureKitchen,)
 from modeltranslation.translator import TranslationOptions, register
@@ -21,17 +21,12 @@ class AttractionsTranslationOptions(TranslationOptions):
 
 @register(PopularPlaces)
 class PopularPlacesTranslationOptions(TranslationOptions):
-    fields = ('popular_name', 'description')
+    fields = ('description',)
 
 
 @register(ToTry)
 class ToTryTranslationOptions(TranslationOptions):
     fields = ('to_name', 'description', 'first_description', 'second_description')
-
-
-@register(PlacesRegion)
-class PlacesRegionTranslationOptions(TranslationOptions):
-    fields = ('user_name', 'text')
 
 
 @register(Hotels)
