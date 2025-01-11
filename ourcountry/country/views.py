@@ -349,11 +349,11 @@ class FavoriteItemViewSet(viewsets.ModelViewSet):
 class FavoriteItemViewSet(viewsets.ModelViewSet):
     serializer_class = FavoriteItemSerializers
 
+
     def get_queryset(self):
         return FavoriteItem.objects.filter(favorite__user=self.request.user)
 
     def perform_create(self, serializer):
-        cart, created = Favorite.objects.get_or_create(user=self.request.user)
+        cart, created = FavoriteItem.objects.get_or_create(user=self.request.user)
         serializer.save(cart=cart)
-
 
