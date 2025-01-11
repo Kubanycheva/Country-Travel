@@ -198,7 +198,7 @@ class PopularReviewListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PopularReview
-        fields = ['id', 'client', 'created_date', 'comment', 'static', 'avg_rating', 'rating_count', 'review_image', 'parent']
+        fields = ['id', 'client', 'created_date', 'comment', 'static', 'avg_rating', 'rating_count', 'review_image']
 
     def get_avg_rating(self, obj):
         return obj.get_avg_rating()
@@ -416,7 +416,7 @@ class KitchenReviewCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = KitchenReview
         fields = ['client_kitchen', 'kitchen_region', 'comment', 'rating',
-                  'nutrition_rating', 'service_rating', 'price_rating', 'atmosphere_rating']
+                  'nutrition_rating', 'price_rating', 'atmosphere_rating']
 
     def create(self, validated_data):
         # Сначала сохраняем отзыв
@@ -610,7 +610,7 @@ class FavoriteItemSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = FavoriteItem
-        fields = ['id', 'attractions', 'popular_region', 'gallery', 'hotels']
+        fields = ['attractions', 'popular_region', 'gallery', 'hotels']
 
 
 class FavoriteSerializers(serializers.ModelSerializer):

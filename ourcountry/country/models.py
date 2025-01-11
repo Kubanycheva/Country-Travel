@@ -46,7 +46,6 @@ class UserProfile(AbstractUser):
 # FOR HOME
 
 
-<<<<<<< HEAD
 class Region_Categoty(models.Model):
     CHOICES = (
         ('Chui', 'Chui'),
@@ -650,5 +649,3 @@ class FavoriteItem(models.Model):
     popular_region = models.ForeignKey(PopularPlaces, on_delete=models.CASCADE, null=True, blank=True)
     gallery = models.ForeignKey(Gallery, on_delete=models.CASCADE, null=True, blank=True)
     hotels = models.ForeignKey(Hotels, on_delete=models.CASCADE, related_name='favorite_hotel')
-=======
->>>>>>> 263bd3f0d17e2f9659049cc638b4c6bbb52e2591
