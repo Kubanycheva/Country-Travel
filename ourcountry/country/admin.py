@@ -3,9 +3,9 @@ from .models import *
 from modeltranslation.admin import TranslationAdmin, TranslationInlineModelAdmin
 
 
-@admin.register(Region, Attractions, Home, PopularPlaces, ToTry, PlacesRegion, Culture,
+@admin.register(Region, Attractions, Home, PopularPlaces, ToTry, Culture,
                 Games, NationalClothes, HandCrafts, Currency, NationalInstruments,
-                CultureKitchen,
+
                 )
 class AllAdmin(TranslationAdmin):
     class Media:
@@ -19,8 +19,39 @@ class AllAdmin(TranslationAdmin):
         }
 
 
+class CultureKitchenImageInline(admin.TabularInline):
+    model = CultureKitchenImage
+    extra = 1
+
+
+@admin.register(CultureKitchen)
+class CultureKitchenAdmin(TranslationAdmin):
+    inlines = [CultureKitchenImageInline]
+
+    class Media:
+        js = (
+            'http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js',
+            'http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js',
+            'modeltranslation/js/tabbed_translation_fields.js',
+        )
+        css = {
+            'screen': ('modeltranslation/css/tabbed_translation_fields.css',),
+        }
+
+
 admin.site.register(AttractionsImage)
-admin.site.register(AttractionReview)
+
+
+class AttractionsReviewImageInline(admin.TabularInline):
+    model = AttractionsReviewImage
+    extra = 1
+
+
+class AttractionReviewAdmin(admin.ModelAdmin):
+    inlines = [AttractionsReviewImageInline]
+
+
+admin.site.register(AttractionReview, AttractionReviewAdmin)
 
 
 class ReviewImageInline(admin.TabularInline):
@@ -60,15 +91,19 @@ class HotelsImageInlines(admin.TabularInline):
     extra = 1
 
 
-class HotelsReviewInline(admin.TabularInline):
-    model = HotelsReview
+class HotelsReviewImageInline(admin.TabularInline):
+    model = HotelsReviewImage
     extra = 1
 
 
+class HotelsReviewAdmin(admin.ModelAdmin):
+    inlines = [HotelsReviewImageInline]
+
+
+admin.site.register(HotelsReview, HotelsReviewAdmin)
+
 @admin.register(Hotels)
 class HotelsAdmin(TranslationAdmin):
-    inlines = [HotelsReviewInline, HotelsImageInlines]
-
     class Media:
         js = (
             'http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js',
@@ -80,8 +115,8 @@ class HotelsAdmin(TranslationAdmin):
         }
 
 
-class KitchenReviewInline(admin.TabularInline):
-    model = KitchenReview
+class KitchenReviewImageInline(admin.TabularInline):
+    model = KitchenReviewImage
     extra = 1
 
 
@@ -95,9 +130,16 @@ class KitchenImageInline(admin.TabularInline):
     extra = 1
 
 
+class KitchenReviewAdmin(admin.ModelAdmin):
+    inlines = [KitchenReviewImageInline]
+
+
+admin.site.register(KitchenReview, KitchenReviewAdmin)
+
+
 @admin.register(Kitchen)
 class KitchenAdmin(TranslationAdmin):
-    inlines = [KitchenReviewInline, KitchenImageInline, KitchenLocationInline]
+    inlines = [KitchenImageInline, KitchenLocationInline]
 
     class Media:
         js = (
@@ -124,4 +166,6 @@ admin.site.register(UserProfile)
 admin.site.register(CultureCategory)
 admin.site.register(Favorite)
 admin.site.register(FavoriteItem)
+admin.site.register(Region_Categoty)
+admin.site.register(RegionReview)
 

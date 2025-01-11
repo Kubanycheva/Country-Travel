@@ -1,52 +1,48 @@
 from django.shortcuts import render
-from .models import *
 from .serializers import *
-from rest_framework.generics import ListAPIView
-from rest_framework import permissions
-from rest_framework import viewsets, generics
+from rest_framework import viewsets, generics, status
+from django_filters.rest_framework import DjangoFilterBackend
+from .filters import *
 from rest_framework.response import Response
-from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.tokens import RefreshToken
-
-
-class RegisterView(generics.CreateAPIView):
-    serializer_class = UserSerializer
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-class CustomLoginView(TokenObtainPairView):
-    serializer_class = LoginSerializer
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        try:
-            serializer.is_valid(raise_exception=True)
-        except Exception:
-            return Response({'detail': 'Неверные учетные данные'}, status=status.HTTP_401_UNAUTHORIZED)
-
-        user = serializer.validated_data
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class LogoutView(generics.GenericAPIView):
-    def post(self, request, *args, **kwargs):
-        try:
-            refresh_token = request.data['refresh']
-            token = RefreshToken(refresh_token)
-            token.blacklist()
-            return Response(status=status.HTTP_205_RESET_CONTENT)
-        except Exception:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+#
+# class RegisterView(generics.CreateAPIView):
+#     serializer_class = UserSerializer
+#
+#     def create(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         user = serializer.save()
+#         return Response(serializer.data, status=status.HTTP_201_CREATED)
+#
+#
+# class CustomLoginView(TokenObtainPairView):
+#     serializer_class = LoginSerializer
+#
+#     def post(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         try:
+#             serializer.is_valid(raise_exception=True)
+#         except Exception:
+#             return Response({'detail': 'Неверные учетные данные'}, status=status.HTTP_401_UNAUTHORIZED)
+#
+#         user = serializer.validated_data
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+#
+#
+# class LogoutView(generics.GenericAPIView):
+#     def post(self, request, *args, **kwargs):
+#         try:
+#             refresh_token = request.data['refresh']
+#             token = RefreshToken(refresh_token)
+#             token.blacklist()
+#             return Response(status=status.HTTP_205_RESET_CONTENT)
+#         except Exception:
+#             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 # FOR CHARLES DEO
 
 
-class UserProfileViewSet(viewsets.ModelViewSet):
+class UserProfileCreateAPIView(generics.UpdateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
 
@@ -69,9 +65,40 @@ class AttractionsDetailAPIView(generics.RetrieveAPIView):
     serializer_class = AttractionsDetailSerializer
 
 
-class AttractionReviewViewSet(viewsets.ModelViewSet):
+class AttractionReviewListAPIView(generics.ListAPIView):
     queryset = AttractionReview.objects.all()
-    serializer_class = AttractionReviewSerializer
+    serializer_class = AttractionReviewListSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = AttractionReviewFilter
+
+class AttractionReviewCreateAPIView(generics.CreateAPIView):
+    queryset = AttractionReview.objects.all()
+    serializer_class = AttractionReviewCreateSerializer
+
+    def perform_create(self, serializer):
+        # Сначала создаем отзыв
+        attraction_review = serializer.save()
+
+        # Если есть изображения, сохраняем их
+        images = self.request.FILES.getlist('images')
+        for image in images:
+            AttractionsReviewImage.objects.create(attractions=attraction_review, image=image)
+
+        return attraction_review
+
+    def post(self, request, *args, **kwargs):
+        # Используем CreateAPIView для обработки POST-запроса
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            # Сначала сохраняем отзыв
+            attraction_review = self.perform_create(serializer)
+
+            # Получаем сериализованные данные для ответа, включая изображения
+            response_serializer = AttractionReviewSerializer(attraction_review)
+
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # FOR REGIONS
 
@@ -91,9 +118,41 @@ class PopularPlacesDetailAPI(generics.RetrieveAPIView):
     serializer_class = PopularPlacesDetailSerializer
 
 
-class PopularReviewViewSet(viewsets.ModelViewSet):
+class PopularReviewListAPIView(generics.ListAPIView):
     queryset = PopularReview.objects.all()
-    serializer_class = PopularReviewSerializer
+    serializer_class = PopularReviewListSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = PopularReviewFilter
+
+
+class PopularReviewCreateAPIView(generics.CreateAPIView):
+    queryset = PopularReview.objects.all()
+    serializer_class = PopularReviewCreateSerializer
+
+    def perform_create(self, serializer):
+        # Сначала создаем отзыв
+        popular_review_create = serializer.save()
+
+        # Если есть изображения, сохраняем их
+        images = self.request.FILES.getlist('images')
+        for image in images:
+            ReviewImage.objects.create(review=popular_review_create, image=image)
+
+        return popular_review_create
+
+    def post(self, request, *args, **kwargs):
+        # Используем CreateAPIView для обработки POST-запроса
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            # Сначала сохраняем отзыв
+            popular_review_create = self.perform_create(serializer)
+
+            # Получаем сериализованные данные для ответа, включая изображения
+            response_serializer = PopularReviewSerializer(popular_review_create)
+
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ToTryViewSet(viewsets.ModelViewSet):
@@ -111,12 +170,44 @@ class HotelsDetailAPIView(generics.RetrieveAPIView):
     serializer_class = HotelDetailSerializer
 
 
-class HotelsReviewViewSet(viewsets.ReadOnlyModelViewSet):
+class HotelsReviewListAPIView(generics.ListAPIView):
     queryset = HotelsReview.objects.all()
-    serializer_class = HotelsReviewSerializer
+    serializer_class = HotelReviewListSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = HotelsReviewFilter
 
-    def get_queryset(self):
-        return HotelsReview.objects.filter(client_hotel=self.request.user)
+
+class HotelReviewCreateAPiView(generics.CreateAPIView):
+    queryset = HotelsReview.objects.all()
+    serializer_class = HotelsReviewCreateSerializer
+
+
+    def perform_create(self, serializer):
+        # Сначала создаем отзыв
+        hotel_review_create = serializer.save()
+
+        # Если есть изображения, сохраняем их
+        images = self.request.FILES.getlist('images')
+        for image in images:
+            HotelsReviewImage.objects.create(hotel_review=hotel_review_create, image=image)
+
+        return hotel_review_create
+
+    def post(self, request, *args, **kwargs):
+        # Используем CreateAPIView для обработки POST-запроса
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            # Сначала сохраняем отзыв
+            hotel_review_create = self.perform_create(serializer)
+
+            # Получаем сериализованные данные для ответа, включая изображения
+            response_serializer = HotelsReviewSerializer(hotel_review_create)
+
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 # for kitchen
 
@@ -131,9 +222,41 @@ class KitchenDetailView(generics.RetrieveAPIView):
     serializer_class = KitchenDetailSerializers
 
 
-class KitchenReviewViewSet(viewsets.ModelViewSet):
+class KitchenReviewCreateAPIView(generics.CreateAPIView):
     queryset = KitchenReview.objects.all()
-    serializer_class = KitchenReviewSerializer
+    serializer_class = KitchenReviewCreateSerializer
+
+    def perform_create(self, serializer):
+        # Сначала создаем отзыв
+        kitchen_review = serializer.save()
+
+        # Если есть изображения, сохраняем их
+        images = self.request.FILES.getlist('images')
+        for image in images:
+            KitchenReviewImage.objects.create(review=kitchen_review, image=image)
+
+        return kitchen_review
+
+    def post(self, request, *args, **kwargs):
+        # Используем CreateAPIView для обработки POST-запроса
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            # Сначала сохраняем отзыв
+            kitchen_review = self.perform_create(serializer)
+
+            # Получаем сериализованные данные для ответа, включая изображения
+            response_serializer = KitchenReviewSerializer(kitchen_review)
+
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class KitchenReviewListAPIView(generics.ListAPIView):
+    queryset = KitchenReview.objects.all()
+    serializer_class = KitchenReviewListSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = KitchenReviewFilter
 
 
 class EventListAPiView(generics.ListAPIView):
@@ -181,6 +304,56 @@ class GalleryListAPIView(generics.ListAPIView):
     serializer_class = GallerySerializers
 
 
-class  KitchenReviewAPIView(generics.ListAPIView):
-    queryset = KitchenReview.objects.all()
-    serializer_class = KitchenReviewSerializer
+class GalleryReviewCreateAPIView(generics.CreateAPIView):
+    queryset = GalleryReview.objects.all()
+    serializer_class = GalleryReviewCreateSerializer
+
+    def perform_create(self, serializer):
+        # Сначала создаем отзыв
+        gallery_review = serializer.save()
+
+        # Если есть изображения, сохраняем их
+        images = self.request.FILES.getlist('images')
+        for image in images:
+            GalleryReviewImage.objects.create(gallery=gallery_review, image=image)
+
+        return gallery_review
+
+    def post(self, request, *args, **kwargs):
+        # Используем CreateAPIView для обработки POST-запроса
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            # Сначала сохраняем отзыв
+            gallery_review = self.perform_create(serializer)
+
+            # Получаем сериализованные данные для ответа, включая изображения
+            response_serializer = GalleryReviewSerializer(gallery_review)
+
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FavoriteItemViewSet(viewsets.ModelViewSet):
+    serializer_class = FavoriteSerializers
+
+    def get_queryset(self):
+        return Favorite.objects.filter(user=self.request.user)
+
+    def retrieve(self, request, *args, **kwargs):
+        cart, created = Favorite.objects.get_or_create(user=request.user)
+        serializer = self.get_serializer(cart)
+        return Response(serializer.data)
+
+
+class FavoriteItemViewSet(viewsets.ModelViewSet):
+    serializer_class = FavoriteItemSerializers
+
+    def get_queryset(self):
+        return FavoriteItem.objects.filter(favorite__user=self.request.user)
+
+    def perform_create(self, serializer):
+        cart, created = Favorite.objects.get_or_create(user=self.request.user)
+        serializer.save(cart=cart)
+
+

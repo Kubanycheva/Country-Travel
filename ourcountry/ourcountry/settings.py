@@ -42,13 +42,16 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "phonenumber_field",
     'country',
+    'accounts',
     'rest_framework',
     'rest_framework_swagger',
     'drf_yasg',
     'multiselectfield',
     "corsheaders",
     'rest_framework_simplejwt',
+    'django_filters',
     'rest_framework_simplejwt.token_blacklist',
+    'django_rest_passwordreset',
 
 ]
 
@@ -139,11 +142,12 @@ USE_TZ = True
 LANGUAGES = (
     ('en', 'English'),
     ('ru', 'Russian'),
+    ('ar', 'Arabic'),
 )
 
 MODELTRANSLATION_DEFAULT_LANGUAGE = 'en'
 
-MODELTRANSLATION_LANGUAGES = ('en', 'ru')
+MODELTRANSLATION_LANGUAGES = ('en', 'ru', 'ar')
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -159,12 +163,25 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles/')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
+
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ),
+
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+
+    )
+}
+
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'country.UserProfile'
-
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=50),
@@ -173,3 +190,17 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_HOST = 'smtp.gmail.com'  # Ваш SMTP-сервер
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'bekturkochorbaev64@gmail.com'  # Ваш email
+EMAIL_HOST_PASSWORD = 'diwd chov wdrx wepj'  # Ваш пароль
+
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
