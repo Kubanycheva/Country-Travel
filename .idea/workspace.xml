@@ -32,6 +32,7 @@
   </component>
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   <component name="PropertiesComponent">{}</component>
 =======
   <component name="PropertiesComponent">{
@@ -47,6 +48,9 @@
   }
 }</component>
 >>>>>>> 0694440a18cb0b83e7ded9cd6fac7c7c14aa88d8
+=======
+  <component name="PropertiesComponent">{}</component>
+>>>>>>> 263bd3f0d17e2f9659049cc638b4c6bbb52e2591
   <component name="RunManager">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="Country-Travel" />
