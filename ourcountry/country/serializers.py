@@ -161,7 +161,7 @@ class PopularReviewListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PopularReview
-        fields = ['id', 'client', 'created_date', 'comment', 'static', 'avg_rating', 'rating_count', 'review_image', 'parent']
+        fields = ['id', 'client', 'created_date', 'comment', 'static', 'avg_rating', 'rating_count', 'review_image']
 
     def get_avg_rating(self, obj):
         return obj.get_avg_rating()
@@ -224,16 +224,6 @@ class HotelsListSerializer(serializers.ModelSerializer):
         return obj.get_rating_count()
 
 
-class HotelDetailSerializer(serializers.ModelSerializer):
-    hotel_image = HotelImageSerializers(read_only=True, many=True)
-
-    class Meta:
-        model = Hotels
-        fields = ['id', 'name', 'hotel_image', 'address', 'description', 'bedroom', 'bathroom', 'cars', 'bikes',
-                  'pets', 'amenities', 'safety_and_hygiene', 'price_short_period',
-                  'price_medium_period', 'price_long_period']
-
-
 class HotelReviewListSerializer(serializers.ModelSerializer):
     avg_rating = serializers.SerializerMethodField()
     rating_count = serializers.SerializerMethodField()
@@ -253,6 +243,17 @@ class HotelReviewListSerializer(serializers.ModelSerializer):
 
     def get_rating_count(self, obj):
         return obj.get_rating_count()
+
+
+class HotelDetailSerializer(serializers.ModelSerializer):
+    hotel_image = HotelImageSerializers(read_only=True, many=True)
+    hotel_reviews = HotelReviewListSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = Hotels
+        fields = ['id', 'name', 'hotel_image', 'address', 'description', 'bedroom', 'bathroom', 'cars', 'bikes',
+                  'pets', 'amenities', 'safety_and_hygiene', 'price_short_period',
+                  'price_medium_period', 'price_long_period', 'hotel_reviews']
 
 
 class HotelsReviewImageSerializers(serializers.ModelSerializer):

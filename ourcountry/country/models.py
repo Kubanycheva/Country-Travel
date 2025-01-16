@@ -208,7 +208,7 @@ class PopularReview(models.Model):
                 f"terribly: {count_1} ")
 
     def get_avg_rating(self):
-        ratings = self.popularreview_set.all()
+        ratings = PopularReview.objects.all()
         valid_ratings = [i.rating for i in ratings if i.rating is not None]
         if valid_ratings:
             return round(sum(valid_ratings) / len(valid_ratings), 1)
@@ -394,10 +394,12 @@ class Kitchen(models.Model):
         return self.kitchen_name
 
     def get_average_rating(self):
-        ratings = self.kitchen_reviews.all()
-        if ratings.exists():
-            return round(sum(rating.rating for rating in ratings) / ratings.count(), 1)
+        ratings = HotelsReview.objects.all()
+        valid_ratings = [i.rating for i in ratings if i.rating is not None]
+        if valid_ratings:
+            return round(sum(valid_ratings) / len(valid_ratings), 1)
         return 0
+
 
     def get_rating_count(self):
         ratings = self.kitchen_reviews.all()
@@ -481,8 +483,9 @@ class KitchenReview(models.Model):
 
     def get_avg_rating(self):
         ratings = KitchenReview.objects.all()
-        if ratings.exists():
-            return round(sum(i.rating for i in ratings) / ratings.count(), 1)
+        valid_ratings = [i.rating for i in ratings if i.rating is not None]
+        if valid_ratings:
+            return round(sum(valid_ratings) / len(valid_ratings), 1)
         return 0
 
     def get_rating_count(self):
