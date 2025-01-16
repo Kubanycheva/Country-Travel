@@ -388,9 +388,10 @@ class Kitchen(models.Model):
         return self.kitchen_name
 
     def get_average_rating(self):
-        ratings = self.kitchen_reviews.all()
-        if ratings.exists():
-            return round(sum(rating.rating for rating in ratings) / ratings.count(), 1)
+        ratings = HotelsReview.objects.all()
+        valid_ratings = [i.rating for i in ratings if i.rating is not None]
+        if valid_ratings:
+            return round(sum(valid_ratings) / len(valid_ratings), 1)
         return 0
 
     def get_rating_count(self):
@@ -409,7 +410,7 @@ class Kitchen(models.Model):
 
     def get_service_rating(self):
         ratings = self.kitchen_reviews.all()
-        valid_ratings = [rating.service_rating for rating in ratings if rating.nutrition_rating is not None]
+        valid_ratings = [rating.service_rating for rating in ratings if rating.service_rating is not None]
 
         if valid_ratings:
             return round(sum(valid_ratings) / len(valid_ratings), 1)
