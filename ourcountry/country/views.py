@@ -38,6 +38,7 @@ from rest_framework.response import Response
 #             return Response(status=status.HTTP_205_RESET_CONTENT)
 #         except Exception:
 #             return Response(status=status.HTTP_400_BAD_REQUEST)
+from django.db.models import Avg, Case, When, Value, IntegerField
 
 # FOR CHARLES DEO
 
@@ -69,6 +70,7 @@ class AttractionReviewListAPIView(generics.ListAPIView):
     serializer_class = AttractionReviewListSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = AttractionReviewFilter
+
 
 class AttractionReviewCreateAPIView(generics.CreateAPIView):
     queryset = AttractionReview.objects.all()
@@ -160,8 +162,20 @@ class ToTryViewSet(viewsets.ModelViewSet):
 
 
 class HotelsListAPIView(generics.ListAPIView):
-    queryset = Hotels.objects.all()
     serializer_class = HotelsListSerializer
+
+    def get_queryset(self):
+        # Аннотируем отели средним рейтингом
+        queryset = Hotels.objects.annotate(
+            average_rating=Avg('hotel_reviews__rating'),  # Вычисляем средний рейтинг
+            is_popular=Case(
+                When(average_rating__gte=4, then=Value(1)),  # Если рейтинг >= 4, помечаем как популярный
+                default=Value(0),  # В противном случае, помечаем как непопулярный
+                output_field=IntegerField(),
+            )
+        ).order_by('-is_popular', '-average_rating')  # Сортируем сначала по популярности, затем по рейтингу
+
+        return queryset
 
 
 class HotelsDetailAPIView(generics.RetrieveAPIView):
@@ -207,13 +221,23 @@ class HotelReviewCreateAPiView(generics.CreateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 # for kitchen
 
-
 class KitchenListView(generics.ListAPIView):
-    queryset = Kitchen.objects.all()
     serializer_class = KitchenListSerializer
+
+    def get_queryset(self):
+        # Аннотируем отели средним рейтингом
+        queryset = Kitchen.objects.annotate(
+            average_rating=Avg('kitchen_reviews__rating'),  # Вычисляем средний рейтинг
+            is_popular=Case(
+                When(average_rating__gte=4, then=Value(1)),  # Если рейтинг >= 4, помечаем как популярный
+                default=Value(0),  # В противном случае, помечаем как непопулярный
+                output_field=IntegerField(),
+            )
+        ).order_by('-is_popular', '-average_rating')  # Сортируем сначала по популярности, затем по рейтингу
+
+        return queryset
 
 
 class KitchenDetailView(generics.RetrieveAPIView):

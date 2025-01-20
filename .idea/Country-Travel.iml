@@ -1,18 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <<<<<<< HEAD
+<<<<<<< HEAD
 <module version="4">
 =======
+=======
+>>>>>>> 7e05feed13e41cb60f750c9677d39ad09ab9469e
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
+<<<<<<< HEAD
+=======
+      <excludeFolder url="file://$MODULE_DIR$/ourcountry/venv" />
+      <excludeFolder url="file://$MODULE_DIR$/venv" />
+>>>>>>> 7e05feed13e41cb60f750c9677d39ad09ab9469e
     </content>
     <orderEntry type="jdk" jdkName="Python 3.12 (Country-Travel)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
+<<<<<<< HEAD
 >>>>>>> 263bd3f0d17e2f9659049cc638b4c6bbb52e2591
+=======
+>>>>>>> 7e05feed13e41cb60f750c9677d39ad09ab9469e
   <component name="PyDocumentationSettings">
     <option name="format" value="PLAIN" />
     <option name="myDocStringFormat" value="Plain" />
+  </component>
+  <component name="TestRunnerService">
+    <option name="PROJECT_TEST_RUNNER" value="py.test" />
   </component>
 </module>

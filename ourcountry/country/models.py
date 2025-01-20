@@ -296,11 +296,12 @@ class Hotels(models.Model):
         return self.name
 
     def get_average_rating(self):
-        ratings = HotelsReview.objects.all()
+        ratings = self.hotel_reviews.all()
         valid_ratings = [i.rating for i in ratings if i.rating is not None]
         if valid_ratings:
             return round(sum(valid_ratings) / len(valid_ratings), 1)
         return 0
+
     def get_rating_count(self):
         ratings = self.hotel_reviews.all()
         if ratings.exists():

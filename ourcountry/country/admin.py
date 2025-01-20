@@ -120,7 +120,7 @@ class KitchenReviewImageInline(admin.TabularInline):
     extra = 1
 
 
-class KitchenLocationInline(admin.TabularInline):
+class KitchenLocationInline(TranslationInlineModelAdmin, admin.TabularInline):
     model = KitchenLocation
     extra = 1
 
