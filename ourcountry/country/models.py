@@ -203,7 +203,7 @@ class PopularReview(models.Model):
                 f"terribly: {count_1} ")
 
     def get_avg_rating(self):
-        ratings = self.popularreview_set.all()
+        ratings = PopularReview.objects.all()
         valid_ratings = [i.rating for i in ratings if i.rating is not None]
         if valid_ratings:
             return round(sum(valid_ratings) / len(valid_ratings), 1)
@@ -388,7 +388,7 @@ class Kitchen(models.Model):
         return self.kitchen_name
 
     def get_average_rating(self):
-        ratings = HotelsReview.objects.all()
+        ratings = KitchenReview.objects.all()
         valid_ratings = [i.rating for i in ratings if i.rating is not None]
         if valid_ratings:
             return round(sum(valid_ratings) / len(valid_ratings), 1)
@@ -418,7 +418,7 @@ class Kitchen(models.Model):
 
     def get_price_rating(self):
         ratings = self.kitchen_reviews.all()
-        valid_ratings = [rating.price_rating for rating in ratings if rating.nutrition_rating is not None]
+        valid_ratings = [rating.price_rating for rating in ratings if rating.price_rating is not None]
 
         if valid_ratings:
             return round(sum(valid_ratings) / len(valid_ratings), 1)
@@ -426,12 +426,11 @@ class Kitchen(models.Model):
 
     def get_atmosphere_rating(self):
         ratings = self.kitchen_reviews.all()
-        valid_ratings = [rating.atmosphere_rating for rating in ratings if rating.nutrition_rating is not None]
+        valid_ratings = [rating.atmosphere_rating for rating in ratings if rating.atmosphere_rating is not None]
 
         if valid_ratings:
             return round(sum(valid_ratings) / len(valid_ratings), 1)
         return 0
-
 
 class KitchenLocation(models.Model):
     address = models.TextField()
@@ -452,6 +451,7 @@ class KitchenReview(models.Model):
     kitchen_region = models.ForeignKey(Kitchen, on_delete=models.CASCADE, related_name='kitchen_reviews')
     rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], null=True, blank=True)
     nutrition_rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], null=True, blank=True)
+    service_rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], null=True, blank=True)
     price_rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], null=True, blank=True)
     atmosphere_rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], null=True, blank=True)
     created_at = models.DateField(auto_now_add=True)
@@ -476,8 +476,9 @@ class KitchenReview(models.Model):
 
     def get_avg_rating(self):
         ratings = KitchenReview.objects.all()
-        if ratings.exists():
-            return round(sum(i.rating for i in ratings) / ratings.count(), 1)
+        valid_ratings = [i.rating for i in ratings if i.rating is not None]
+        if valid_ratings:
+            return round(sum(valid_ratings) / len(valid_ratings), 1)
         return 0
 
     def get_rating_count(self):
@@ -641,7 +642,7 @@ class Favorite(models.Model):
     user = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='favorite')
 
     def __str__(self):
-        return self.user
+        return str(self.user)
 
 
 class FavoriteItem(models.Model):
@@ -650,3 +651,6 @@ class FavoriteItem(models.Model):
     popular_region = models.ForeignKey(PopularPlaces, on_delete=models.CASCADE, null=True, blank=True)
     gallery = models.ForeignKey(Gallery, on_delete=models.CASCADE, null=True, blank=True)
     hotels = models.ForeignKey(Hotels, on_delete=models.CASCADE, related_name='favorite_hotel')
+
+    def __str__(self):
+        return str(self.favorite)

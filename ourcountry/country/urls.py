@@ -53,7 +53,7 @@ urlpatterns = [
     path('gallery/', GalleryListAPIView.as_view(), name='gallery'),
     path('gallery_review_create/', GalleryReviewCreateAPIView.as_view(), name='gallery_review_create'),
 
-    path('favorite/', FavoriteItemViewSet.as_view({'get': 'retrieve'}), name='favorite'),
+    path('favorite/', FavoriteItemViewSet.as_view({'get': 'list'}), name='favorite'),
 
     path('favorite_item/', FavoriteItemViewSet.as_view({'get': 'list', 'post': 'create'}), name='favorite_item_list'),
     path('favorite_item/<int:pk>/', FavoriteItemViewSet.as_view({'put': 'update', 'delete': 'destroy'}), name='favorite_item_detail'),
