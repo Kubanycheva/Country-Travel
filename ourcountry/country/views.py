@@ -1,56 +1,125 @@
 from django.shortcuts import render
-from .models import *
 from .serializers import *
-from rest_framework import viewsets, generics
-
+from rest_framework import viewsets, generics, status
+from django_filters.rest_framework import DjangoFilterBackend
+from .filters import *
+from rest_framework.response import Response
+from django.db.models import Avg, Case, When, Value, IntegerField
 
 # FOR CHARLES DEO
 
 
-class UserProfileViewSet(viewsets.ModelViewSet):
+class UserProfileCreateAPIView(generics.UpdateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
-
 
 # FOR HOME
 
 
-class HomeViewSet(viewsets.ModelViewSet):
+class HomeListAPIView(generics.ListAPIView):
     queryset = Home.objects.all()
     serializer_class = HomeSerializer
 
 
-class AttractionsHomeViewSet(viewsets.ModelViewSet):
-    queryset = AttractionsHome.objects.all()
-    serializer_class = AttractionsHomeSerializer
+class AttractionsListAPIView(generics.ListAPIView):
+    queryset = Attractions.objects.all()
+    serializer_class = AttractionsListSerializer
 
 
-class HomeReviewViewSet(viewsets.ModelViewSet):
-    queryset = HomeReview.objects.all()
-    serializer_class = HomeReviewSerializer
+class AttractionsDetailAPIView(generics.RetrieveAPIView):
+    queryset = Attractions.objects.all()
+    serializer_class = AttractionsDetailSerializer
 
 
-class AttractionCultureViewSet(viewsets.ModelViewSet):
-    queryset = AttractionCulture.objects.all()
-    serializer_class = AttractionCultureSerializer
+class AttractionReviewListAPIView(generics.ListAPIView):
+    queryset = AttractionReview.objects.all()
+    serializer_class = AttractionReviewListSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = AttractionReviewFilter
 
+
+class AttractionReviewCreateAPIView(generics.CreateAPIView):
+    queryset = AttractionReview.objects.all()
+    serializer_class = AttractionReviewCreateSerializer
+
+    def perform_create(self, serializer):
+        # Сначала создаем отзыв
+        attraction_review = serializer.save()
+
+        # Если есть изображения, сохраняем их
+        images = self.request.FILES.getlist('images')
+        for image in images:
+            AttractionsReviewImage.objects.create(attractions=attraction_review, image=image)
+
+        return attraction_review
+
+    def post(self, request, *args, **kwargs):
+        # Используем CreateAPIView для обработки POST-запроса
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            # Сначала сохраняем отзыв
+            attraction_review = self.perform_create(serializer)
+
+            # Получаем сериализованные данные для ответа, включая изображения
+            response_serializer = AttractionReviewSerializer(attraction_review)
+
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # FOR REGIONS
 
 
-class RegionViewSet(viewsets.ModelViewSet):
+class RegionListAPIView(generics.ListAPIView):
     queryset = Region.objects.all()
     serializer_class = RegionSerializer
 
 
-class PopularRegionViewSet(viewsets.ModelViewSet):
-    queryset = PopularRegion.objects.all()
-    serializer_class = PopularRegionSerializer
+class PopularPlacesListAPI(generics.ListAPIView):
+    queryset = PopularPlaces.objects.all()
+    serializer_class = PopularPlacesListSerializer
 
 
-class PopularReviewViewSet(viewsets.ModelViewSet):
+class PopularPlacesDetailAPI(generics.RetrieveAPIView):
+    queryset = PopularPlaces.objects.all()
+    serializer_class = PopularPlacesDetailSerializer
+
+
+class PopularReviewListAPIView(generics.ListAPIView):
     queryset = PopularReview.objects.all()
-    serializer_class = PopularReviewSerializer
+    serializer_class = PopularReviewListSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = PopularReviewFilter
+
+
+class PopularReviewCreateAPIView(generics.CreateAPIView):
+    queryset = PopularReview.objects.all()
+    serializer_class = PopularReviewCreateSerializer
+
+    def perform_create(self, serializer):
+        # Сначала создаем отзыв
+        popular_review_create = serializer.save()
+
+        # Если есть изображения, сохраняем их
+        images = self.request.FILES.getlist('images')
+        for image in images:
+            ReviewImage.objects.create(review=popular_review_create, image=image)
+
+        return popular_review_create
+
+    def post(self, request, *args, **kwargs):
+        # Используем CreateAPIView для обработки POST-запроса
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            # Сначала сохраняем отзыв
+            popular_review_create = self.perform_create(serializer)
+
+            # Получаем сериализованные данные для ответа, включая изображения
+            response_serializer = PopularReviewSerializer(popular_review_create)
+
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ToTryViewSet(viewsets.ModelViewSet):
@@ -58,168 +127,221 @@ class ToTryViewSet(viewsets.ModelViewSet):
     serializer_class = ToTrySerializer
 
 
-# FOR GALLERY
+class HotelsListAPIView(generics.ListAPIView):
+    serializer_class = HotelsListSerializer
 
-class GalleryViewSet(viewsets.ModelViewSet):
-    queryset = Gallery.objects.all()
-    serializer_class = GallerySerializer
+    def get_queryset(self):
+        # Аннотируем отели средним рейтингом
+        queryset = Hotels.objects.annotate(
+            average_rating=Avg('hotel_reviews__rating'),  # Вычисляем средний рейтинг
+            is_popular=Case(
+                When(average_rating__gte=4, then=Value(1)),  # Если рейтинг >= 4, помечаем как популярный
+                default=Value(0),  # В противном случае, помечаем как непопулярный
+                output_field=IntegerField(),
+            )
+        ).order_by('-is_popular', '-average_rating')  # Сортируем сначала по популярности, затем по рейтингу
 
-
-class GalleryViewSet(viewsets.ModelViewSet):
-    queryset = Gallery.objects.all()
-    serializer_class = GallerySerializer
-
-# FOR CULTURE
-
-
-class CultureViewSet(viewsets.ModelViewSet):
-    queryset = Culture.objects.all()
-    serializer_class = CultureSerializer
+        return queryset
 
 
-class GamesViewSet(viewsets.ModelViewSet):
-    queryset = Games.objects.all()
-    serializer_class = GamesSerializer
+class HotelsDetailAPIView(generics.RetrieveAPIView):
+    queryset = Hotels.objects.all()
+    serializer_class = HotelDetailSerializer
 
 
-class NationalClothesViewSet(viewsets.ModelViewSet):
-    queryset = NationalClothes.objects.all()
-    serializer_class = NationalClothesSerializer
-
-
-class HandCraftsViewSet(viewsets.ModelViewSet):
-    queryset = HandCrafts.objects.all()
-    serializer_class = HandCraftsSerializer
-
-
-class CurrencyViewSet(viewsets.ModelViewSet):
-    queryset = Currency.objects.all()
-    serializer_class = CurrencySerializer
-
-
-class NationalInstrumentsViewSet(viewsets.ModelViewSet):
-    queryset = NationalInstruments.objects.all()
-    serializer_class = NationalInstrumentsSerializer
-
-
-class KitchenViewSet(viewsets.ModelViewSet):
-    queryset = Kitchen.objects.all()
-    serializer_class = KitchenSerializer
-
-
-# FOR FIVE_CATEGORIES
-
-# for places
-
-
-class PlacesRegionViewSet(viewsets.ModelViewSet):
-    queryset = Kitchen.objects.all()
-    serializer_class = KitchenSerializer
-# FOR Hotels
-
-
-class HotelsRegionViewSet(viewsets.ModelViewSet):
-    queryset = HotelsRegion.objects.all()
-    serializer_class = HotelsRegionSerializer
-
-
-class HotelsReviewViewSet(viewsets.ModelViewSet):
+class HotelsReviewListAPIView(generics.ListAPIView):
     queryset = HotelsReview.objects.all()
-    serializer_class = HotelsReviewSerializer
+    serializer_class = HotelReviewListSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = HotelsReviewFilter
+
+
+class HotelReviewCreateAPiView(generics.CreateAPIView):
+    queryset = HotelsReview.objects.all()
+    serializer_class = HotelsReviewCreateSerializer
+
+
+    def perform_create(self, serializer):
+        # Сначала создаем отзыв
+        hotel_review_create = serializer.save()
+
+        # Если есть изображения, сохраняем их
+        images = self.request.FILES.getlist('images')
+        for image in images:
+            HotelsReviewImage.objects.create(hotel_review=hotel_review_create, image=image)
+
+        return hotel_review_create
+
+    def post(self, request, *args, **kwargs):
+        # Используем CreateAPIView для обработки POST-запроса
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            # Сначала сохраняем отзыв
+            hotel_review_create = self.perform_create(serializer)
+
+            # Получаем сериализованные данные для ответа, включая изображения
+            response_serializer = HotelsReviewSerializer(hotel_review_create)
+
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # for kitchen
 
+class KitchenListView(generics.ListAPIView):
+    serializer_class = KitchenListSerializer
 
-class KitchenViewSet(viewsets.ModelViewSet):
+    def get_queryset(self):
+        # Аннотируем отели средним рейтингом
+        queryset = Kitchen.objects.annotate(
+            average_rating=Avg('kitchen_reviews__rating'),  # Вычисляем средний рейтинг
+            is_popular=Case(
+                When(average_rating__gte=4, then=Value(1)),  # Если рейтинг >= 4, помечаем как популярный
+                default=Value(0),  # В противном случае, помечаем как непопулярный
+                output_field=IntegerField(),
+            )
+        ).order_by('-is_popular', '-average_rating')  # Сортируем сначала по популярности, затем по рейтингу
+
+        return queryset
+
+
+class KitchenDetailView(generics.RetrieveAPIView):
     queryset = Kitchen.objects.all()
-    serializer_class = KitchenSerializer
+    serializer_class = KitchenDetailSerializers
 
 
-class KitchenReviewViewSet(viewsets.ModelViewSet):
+class KitchenReviewCreateAPIView(generics.CreateAPIView):
     queryset = KitchenReview.objects.all()
-    serializer_class = KitchenReviewSerializer
+    serializer_class = KitchenReviewCreateSerializer
+
+    def perform_create(self, serializer):
+        # Сначала создаем отзыв
+        kitchen_review = serializer.save()
+
+        # Если есть изображения, сохраняем их
+        images = self.request.FILES.getlist('images')
+        for image in images:
+            KitchenReviewImage.objects.create(review=kitchen_review, image=image)
+
+        return kitchen_review
+
+    def post(self, request, *args, **kwargs):
+        # Используем CreateAPIView для обработки POST-запроса
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            # Сначала сохраняем отзыв
+            kitchen_review = self.perform_create(serializer)
+
+            # Получаем сериализованные данные для ответа, включая изображения
+            response_serializer = KitchenReviewSerializer(kitchen_review)
+
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# FOR event
-
-#  7 categories
-
-
-class ConcertViewSet(viewsets.ModelViewSet):
-    queryset = Concert.objects.all()
-    serializer_class = ConcertSerializer
+class KitchenReviewListAPIView(generics.ListAPIView):
+    queryset = KitchenReview.objects.all()
+    serializer_class = KitchenReviewListSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = KitchenReviewFilter
 
 
-class EventConcertViewSet(viewsets.ModelViewSet):
-    queryset = EventConcert.objects.all()
-    serializer_class = EventConcertSerializer
+class EventListAPiView(generics.ListAPIView):
+    queryset = Event.objects.all()
+    serializer_class = EventSerializers
 
 
-class CinemaViewSet(viewsets.ModelViewSet):
-    queryset = Cinema.objects.all()
-    serializer_class = CinemaSerializer
+class CultureListAPiView(generics.ListAPIView):
+    queryset = Culture.objects.all()
+    serializer_class = CultureSerializers
 
 
-class EventCinemaViewSet(viewsets.ModelViewSet):
-    queryset = EventCinema.objects.all()
-    serializer_class = EventCinemaSerializer
+class GamesViewSet(viewsets.ModelViewSet):
+    queryset = Games.objects.all()
+    serializer_class = GamesSerializers
 
 
-class LeisureViewSet(viewsets.ModelViewSet):
-    queryset = Leisure.objects.all()
-    serializer_class = LeisureSerializer
+class NationalClothesViewSet(viewsets.ModelViewSet):
+    queryset = NationalClothes.objects.all()
+    serializer_class = NationalClothesSerializers
 
 
-class EventLeisureViewSet(viewsets.ModelViewSet):
-    queryset = EventLeisure.objects.all()
-    serializer_class = EventLeisureSerializer
+class CurrencyViewSet(viewsets.ModelViewSet):
+    queryset = Currency.objects.all()
+    serializer_class = CurrencySerializers
 
 
-class TheaterViewSet(viewsets.ModelViewSet):
-    queryset = Theater.objects.all()
-    serializer_class = TheaterSerializer
+class HandCraftsViewSet(viewsets.ModelViewSet):
+    queryset = HandCrafts.objects.all()
+    serializer_class = HandCraftsSerializers
 
 
-class EventTheaterViewSet(viewsets.ModelViewSet):
-    queryset = EventTheater.objects.all()
-    serializer_class = EventTheaterSerializer
+class NationalInstrumentsViewSet(viewsets.ModelViewSet):
+    queryset = NationalInstruments.objects.all()
+    serializer_class = NationalInstrumentsSerializers
 
 
-class MasterClassesViewSet(viewsets.ModelViewSet):
-    queryset = MasterClasses.objects.all()
-    serializer_class = MasterClassesSerializer
+class CultureKitchenViewSet(viewsets.ModelViewSet):
+    queryset = CultureKitchen.objects.all()
+    serializer_class = CultureKitchenSerializers
 
 
-class EventMasterViewSet(viewsets.ModelViewSet):
-    queryset = EventMaster.objects.all()
-    serializer_class = EventMasterSerializer
+class GalleryListAPIView(generics.ListAPIView):
+    queryset = Gallery.objects.all()
+    serializer_class = GallerySerializers
 
 
-class TourismViewSet(viewsets.ModelViewSet):
-    queryset = Tourism.objects.all()
-    serializer_class = TourismSerializer
+class GalleryReviewCreateAPIView(generics.CreateAPIView):
+    queryset = GalleryReview.objects.all()
+    serializer_class = GalleryReviewCreateSerializer
 
-#FOR Attractions
+    def perform_create(self, serializer):
+        # Сначала создаем отзыв
+        gallery_review = serializer.save()
 
+        # Если есть изображения, сохраняем их
+        images = self.request.FILES.getlist('images')
+        for image in images:
+            GalleryReviewImage.objects.create(gallery=gallery_review, image=image)
 
-class AttractionsEventViewSet(viewsets.ModelViewSet):
-    queryset = AttractionsEvent.objects.all()
-    serializer_class = AttractionsEventSerializer
+        return gallery_review
 
+    def post(self, request, *args, **kwargs):
+        # Используем CreateAPIView для обработки POST-запроса
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            # Сначала сохраняем отзыв
+            gallery_review = self.perform_create(serializer)
 
-class AttractionsEventReviewViewSet(viewsets.ModelViewSet):
-    queryset = AttractionsEventReview.objects.all()
-    serializer_class = AttractionsEventReviewSerializer
+            # Получаем сериализованные данные для ответа, включая изображения
+            response_serializer = GalleryReviewSerializer(gallery_review)
 
-# FOR FAVORITE
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
-
-class FavoriteViewSet(viewsets.ModelViewSet):
-    queryset = Favorite.objects.all()
-    serializer_class = FavoriteSerializer
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class FavoriteItemViewSet(viewsets.ModelViewSet):
-    queryset = FavoriteItem.objects.all()
-    serializer_class = FavoriteItemSerializer
+    serializer_class = FavoriteSerializers
+
+    def get_queryset(self):
+        return Favorite.objects.filter(user=self.request.user)
+
+    def retrieve(self, request, *args, **kwargs):
+        cart, created = Favorite.objects.get_or_create(user=request.user)
+        serializer = self.get_serializer(cart)
+        return Response(serializer.data)
+
+
+class FavoriteItemViewSet(viewsets.ModelViewSet):
+    serializer_class = FavoriteItemSerializers
+
+    def get_queryset(self):
+        return FavoriteItem.objects.filter(favorite__user=self.request.user)
+
+    def perform_create(self, serializer):
+        cart, created = Favorite.objects.get_or_create(user=self.request.user)
+        serializer.save(cart=cart)
+
