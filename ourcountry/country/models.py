@@ -302,11 +302,12 @@ class Hotels(models.Model):
         return self.name
 
     def get_average_rating(self):
-        ratings = HotelsReview.objects.all()
+        ratings = self.hotel_reviews.all()
         valid_ratings = [i.rating for i in ratings if i.rating is not None]
         if valid_ratings:
             return round(sum(valid_ratings) / len(valid_ratings), 1)
         return 0
+
     def get_rating_count(self):
         ratings = self.hotel_reviews.all()
         if ratings.exists():
@@ -394,11 +395,12 @@ class Kitchen(models.Model):
         return self.kitchen_name
 
     def get_average_rating(self):
-        ratings = HotelsReview.objects.all()
+        ratings = self.kitchen_reviews.all()
         valid_ratings = [i.rating for i in ratings if i.rating is not None]
         if valid_ratings:
             return round(sum(valid_ratings) / len(valid_ratings), 1)
         return 0
+
 
 
     def get_rating_count(self):
@@ -417,7 +419,7 @@ class Kitchen(models.Model):
 
     def get_service_rating(self):
         ratings = self.kitchen_reviews.all()
-        valid_ratings = [rating.service_rating for rating in ratings if rating.nutrition_rating is not None]
+        valid_ratings = [rating.service_rating for rating in ratings if rating.service_rating is not None]
 
         if valid_ratings:
             return round(sum(valid_ratings) / len(valid_ratings), 1)
@@ -425,7 +427,7 @@ class Kitchen(models.Model):
 
     def get_price_rating(self):
         ratings = self.kitchen_reviews.all()
-        valid_ratings = [rating.price_rating for rating in ratings if rating.nutrition_rating is not None]
+        valid_ratings = [rating.price_rating for rating in ratings if rating.price_rating is not None]
 
         if valid_ratings:
             return round(sum(valid_ratings) / len(valid_ratings), 1)
@@ -433,7 +435,7 @@ class Kitchen(models.Model):
 
     def get_atmosphere_rating(self):
         ratings = self.kitchen_reviews.all()
-        valid_ratings = [rating.atmosphere_rating for rating in ratings if rating.nutrition_rating is not None]
+        valid_ratings = [rating.atmosphere_rating for rating in ratings if rating.atmosphere_rating is not None]
 
         if valid_ratings:
             return round(sum(valid_ratings) / len(valid_ratings), 1)
@@ -651,7 +653,7 @@ class Favorite(models.Model):
     user = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='favorite')
 
     def __str__(self):
-        return self.user
+        return str(self.user)
 
 
 class FavoriteItem(models.Model):
@@ -660,3 +662,7 @@ class FavoriteItem(models.Model):
     popular_region = models.ForeignKey(PopularPlaces, on_delete=models.CASCADE, null=True, blank=True)
     gallery = models.ForeignKey(Gallery, on_delete=models.CASCADE, null=True, blank=True)
     hotels = models.ForeignKey(Hotels, on_delete=models.CASCADE, related_name='favorite_hotel')
+
+    def __str__(self):
+        return str(self.favorite)
+
