@@ -36,10 +36,6 @@ class UserSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         refresh = RefreshToken.for_user(instance)
         return {
-            'user': {
-                'first_name': instance.first_name,
-                'email': instance.email,
-                },
                 'access': str(refresh.access_token),
                 'refresh': str(refresh),
             }
@@ -48,15 +44,15 @@ class UserSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
-    confirm_password = serializers.CharField(write_only=True)
+   #confirm_password = serializers.CharField(write_only=True)
 
     def validate(self, data):
         print("=== Debug info ===")
         print(f"Email from request: {data['email']}")
 
         # Сначала проверяем совпадение паролей
-        if data['password'] != data['confirm_password']:
-            raise serializers.ValidationError({'password': 'Пароли не совпадают'})
+        #if data['password'] != data['confirm_password']:
+        #    raise serializers.ValidationError({'password': 'Пароли не совпадают'})
 
         try:
             user = UserProfile.objects.get(email=data['email'])
@@ -82,11 +78,6 @@ class LoginSerializer(serializers.Serializer):
         user = instance['user']
         refresh = RefreshToken.for_user(user)
         return {
-            'user': {
-                'email': user.email,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-            },
             'access': str(refresh.access_token),
             'refresh': str(refresh)
         }

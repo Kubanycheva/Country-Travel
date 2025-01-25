@@ -9,5 +9,6 @@ urlpatterns = [
     path('user_comments/', UserCommentsHistoryAPIView.as_view(), name='user_comments'),
 
     path('password_reset/verify_code/', verify_reset_code, name='verify_reset_code'),
-    path('password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
+    path('password_reset/', custom_password_reset, name='custom_password_reset'),
+
 ]

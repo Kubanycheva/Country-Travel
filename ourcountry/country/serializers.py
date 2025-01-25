@@ -71,10 +71,16 @@ class AttractionsImageSerializers(serializers.ModelSerializer):
 class AttractionsListSerializer(serializers.ModelSerializer):
     avg_rating = serializers.SerializerMethodField()
     rating_count = serializers.SerializerMethodField()
+    region_category = serializers.SlugRelatedField(
+        queryset=Region_Categoty.objects.all(),#Liliya
+        slug_field='region_category'
+    )
 
     class Meta:
         model = Attractions
-        fields = ['id', 'attraction_name', 'main_image', 'description', 'avg_rating', 'rating_count']
+        fields = ['id', 'attraction_name', 'region_category', 'main_image', 'description', 'avg_rating',
+                  'rating_count', 'popular_places']
+
 
     def get_avg_rating(self, obj):
         return obj.get_avg_rating()
@@ -129,7 +135,7 @@ class ToTrySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ToTry
-        fields = ['id', 'to_name', 'first_description', 'second_description', 'image']
+        fields = ['id', 'to_name', 'first_description',  'second_description', 'image']
 
 
 
@@ -207,17 +213,14 @@ class HotelsListSerializer(serializers.ModelSerializer):
     average_rating = serializers.SerializerMethodField()
     rating_count = serializers.SerializerMethodField()
     region = serializers.SlugRelatedField(
-        slug_field='region_name',
-        queryset=Region.objects.all()
-    )
-    popular_places = serializers.SlugRelatedField(
-        slug_field='popular_name',
-        queryset=PopularPlaces.objects.all()
+        slug_field='region_category',
+        queryset=Region_Categoty.objects.all()  #Liliya
     )
 
     class Meta:
         model = Hotels
         fields = ['id', 'name', 'main_image', 'average_rating', 'rating_count', 'region', 'popular_places']
+
 
     def get_average_rating(self, obj):
         return obj.get_average_rating()
@@ -237,6 +240,7 @@ class HotelReviewListSerializer(serializers.ModelSerializer):
         model = HotelsReview
         fields = ['client_hotel', 'hotel', 'comment', 'static', 'avg_rating', 'rating_count', 'hotel_review_image']
 
+	
     def get_static(self, obj):
         return obj.get_static()
 
@@ -298,10 +302,15 @@ class KitchenLocationSerializers(serializers.ModelSerializer):
 class KitchenListSerializer(serializers.ModelSerializer):
     average_rating = serializers.SerializerMethodField()
     rating_count = serializers.SerializerMethodField()
+    kitchen_region = serializers.SlugRelatedField(
+        queryset=Region_Categoty.objects.all(),  #Liliya
+        slug_field='region_category'
+    )
 
     class Meta:
         model = Kitchen
-        fields = ['id', 'kitchen_name', 'price', 'type_of_cafe', 'average_rating', 'rating_count', 'main_image']
+        fields = ['id', 'kitchen_name', 'price', 'popular_places', 'kitchen_region', 'type_of_cafe', 'average_rating', 'rating_count', 'main_image']
+
 
     def get_average_rating(self, obj):
         return obj.get_average_rating()
@@ -439,12 +448,31 @@ class HandCraftsSerializers(serializers.ModelSerializer):
         fields = ["id", 'culture', 'hand_name', 'hand_description', 'hand_image']
 
 
+#FOR CURRENCY
+
+
+class Currency_DescriptionSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Currency_Description
+        fields = ['description']
+
+
+class Currency_ImageSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Currency_Image
+        fields = ['front_image', 'back_image']
+
+
 class CurrencySerializers(serializers.ModelSerializer):
     culture = CultureSimpleSerializers(read_only=True)
+    currency_description = Currency_DescriptionSerializers(read_only=True, many=True)
+    currency_image = Currency_ImageSerializers(read_only=True, many=True)
+
 
     class Meta:
         model = Currency
         fields = ['id',  "culture", 'currency_name', 'currency_description', 'currency_image']
+
 
 
 class NationalInstrumentsSerializers(serializers.ModelSerializer):

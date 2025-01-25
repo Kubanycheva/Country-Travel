@@ -4,40 +4,6 @@ from rest_framework import viewsets, generics, status
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import *
 from rest_framework.response import Response
-#
-# class RegisterView(generics.CreateAPIView):
-#     serializer_class = UserSerializer
-#
-#     def create(self, request, *args, **kwargs):
-#         serializer = self.get_serializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         user = serializer.save()
-#         return Response(serializer.data, status=status.HTTP_201_CREATED)
-#
-#
-# class CustomLoginView(TokenObtainPairView):
-#     serializer_class = LoginSerializer
-#
-#     def post(self, request, *args, **kwargs):
-#         serializer = self.get_serializer(data=request.data)
-#         try:
-#             serializer.is_valid(raise_exception=True)
-#         except Exception:
-#             return Response({'detail': 'Неверные учетные данные'}, status=status.HTTP_401_UNAUTHORIZED)
-#
-#         user = serializer.validated_data
-#         return Response(serializer.data, status=status.HTTP_200_OK)
-#
-#
-# class LogoutView(generics.GenericAPIView):
-#     def post(self, request, *args, **kwargs):
-#         try:
-#             refresh_token = request.data['refresh']
-#             token = RefreshToken(refresh_token)
-#             token.blacklist()
-#             return Response(status=status.HTTP_205_RESET_CONTENT)
-#         except Exception:
-#             return Response(status=status.HTTP_400_BAD_REQUEST)
 from django.db.models import Avg, Case, When, Value, IntegerField
 
 # FOR CHARLES DEO
@@ -47,6 +13,10 @@ class UserProfileCreateAPIView(generics.UpdateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
 
+
+class UserProfileListAPIView(generics.ListAPIView):
+    queryset = UserProfile.objects.all()
+    serializer_class = UserProfileSerializer
 # FOR HOME
 
 
@@ -152,6 +122,8 @@ class PopularReviewCreateAPIView(generics.CreateAPIView):
             response_serializer = PopularReviewSerializer(popular_review_create)
 
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -260,6 +232,8 @@ class KitchenReviewCreateAPIView(generics.CreateAPIView):
 
         return kitchen_review
 
+
+
     def post(self, request, *args, **kwargs):
         # Используем CreateAPIView для обработки POST-запроса
         serializer = self.get_serializer(data=request.data)
@@ -362,11 +336,11 @@ class FavoriteItemViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Favorite.objects.filter(user=self.request.user)
-    #
-    # def retrieve(self, request, *args, **kwargs):
-    #     cart, created = Favorite.objects.get_or_create(user=request.user)
-    #     serializer = self.get_serializer(cart)
-    #     return Response(serializer.data)
+
+    def retrieve(self, request, *args, **kwargs):
+        cart, created = Favorite.objects.get_or_create(user=request.user)
+        serializer = self.get_serializer(cart)
+        return Response(serializer.data)
 
 
 class FavoriteItemViewSet(viewsets.ModelViewSet):
