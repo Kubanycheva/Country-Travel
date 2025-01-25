@@ -219,6 +219,7 @@ class HotelsListSerializer(serializers.ModelSerializer):
         model = Hotels
         fields = ['id', 'name', 'main_image', 'average_rating', 'rating_count', 'region', 'popular_places']
 
+
     def get_average_rating(self, obj):
         return obj.get_average_rating()
 

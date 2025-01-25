@@ -21,7 +21,7 @@ class AttractionsTranslationOptions(TranslationOptions):
 
 @register(PopularPlaces)
 class PopularPlacesTranslationOptions(TranslationOptions):
-    fields = ('description',)
+    fields = ('popular_name', 'description',)
 
 
 @register(ToTry)

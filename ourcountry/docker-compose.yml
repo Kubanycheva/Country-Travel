@@ -30,11 +30,11 @@ services:
     ports:
       - "80:80"
     volumes:
-      - /home/ubuntu/Country-Travel/ourcountry/staticfiles:/app/static
+      - /home/ubuntu/Count  ry-Travel/ourcountry/staticfiles:/app/static
       - media_volume:/app/media
     depends_on:
       - web
-
+P
 volumes:
   postgres_data:
   media_volume:

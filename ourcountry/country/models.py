@@ -224,7 +224,6 @@ class ReviewImage(models.Model):
 class ToTry(models.Model):
     region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='What_to_try')
     to_name = models.CharField(max_length=200)
-    description = models.TextField()
     image = models.ImageField(upload_to='to_try_image/', null=True, blank=True)
     first_description = models.TextField()
     second_description = models.TextField()
