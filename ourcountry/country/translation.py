@@ -1,6 +1,6 @@
 from .models import (Region, Home, Attractions, PopularPlaces, ToTry, Hotels, Kitchen,
                      Gallery, Culture, Games, NationalClothes, HandCrafts, Currency, NationalInstruments,
-                     CultureKitchen, KitchenLocation, )
+                     CultureKitchen, KitchenLocation, Currency_Description, )
 from modeltranslation.translator import TranslationOptions, register
 
 
@@ -71,7 +71,13 @@ class HandCraftsTranslationOptions(TranslationOptions):
 
 @register(Currency)
 class CurrencyTranslationOptions(TranslationOptions):
-    fields = ('currency_name', 'currency_description')
+    fields = ('currency_name',)
+
+
+@register(Currency_Description)
+class Currency_DescriptionTranslationOptions(TranslationOptions):
+    fields = ('description',)
+
 
 
 @register(NationalInstruments)

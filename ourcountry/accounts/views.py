@@ -174,11 +174,11 @@ class UserCommentsHistoryAPIView(APIView):
 
 
 # RESET PSSSWORD
-
+from django_rest_passwordreset.views import ResetPasswordRequestToken
+from .serializers import VerifyResetCodeSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import VerifyResetCodeSerializer
 
 @api_view(['POST'])
 def verify_reset_code(request):
@@ -187,3 +187,16 @@ def verify_reset_code(request):
         serializer.save()
         return Response({'message': 'Пароль успешно сброшен.'}, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def custom_password_reset(request):
+    """
+    Переопределенный эндпоинт для сброса пароля.
+    """
+    # Передаем стандартный HttpRequest через request._request
+    response = ResetPasswordRequestToken.as_view()(request._request)
+
+    if response.status_code == 200:
+        return Response({'status': "Код отправлен"}, status=status.HTTP_200_OK)
+    return response

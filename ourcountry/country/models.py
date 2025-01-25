@@ -83,13 +83,35 @@ class Home(models.Model):
         return self.home_name
 
 
+class PopularPlaces(models.Model):
+    popular_name = models.CharField(max_length=250)
+    popular_image = models.ImageField(upload_to='popular_images')
+    description = models.TextField()
+    region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='popular_places')
+
+    def __str__(self):
+        return f'{self.popular_name}'
+
+    def get_avg_rating(self):
+        ratings = self.popular_reviews.all()
+        valid_ratings = [i.rating for i in ratings if i.rating is not None]
+        if valid_ratings:
+            return round(sum(valid_ratings) / len(valid_ratings), 1)
+        return 0
+
+    def get_rating_count(self):
+        ratings = self.popular_reviews.all()
+        if ratings.exists():
+            return ratings.count()
+        return 0
+
+
 class Attractions(models.Model):
     attraction_name = models.CharField(max_length=155)
     description = models.TextField()
-    region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='region')
+    region_category = models.ForeignKey(Region_Categoty, on_delete=models.CASCADE, null=True, blank=True)#Liliya
+    popular_places = models.ForeignKey(PopularPlaces, on_delete=models.CASCADE, related_name='popular_places', null=True, blank=True)#Liliya
     main_image = models.ImageField(upload_to='main_image/', null=True, blank=True)
-
-
 
     def __str__(self):
         return self.attraction_name
@@ -160,28 +182,6 @@ class AttractionsReviewImage(models.Model):
 
 # FOR REGIONS
 
-class PopularPlaces(models.Model):
-    popular_name = models.CharField(max_length=250)
-    popular_image = models.ImageField(upload_to='popular_images')
-    description = models.TextField()
-    region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='popular_places')
-
-    def __str__(self):
-        return f'{self.popular_name}'
-
-    def get_avg_rating(self):
-        ratings = self.popular_reviews.all()
-        valid_ratings = [i.rating for i in ratings if i.rating is not None]
-        if valid_ratings:
-            return round(sum(valid_ratings) / len(valid_ratings), 1)
-        return 0
-
-    def get_rating_count(self):
-        ratings = self.popular_reviews.all()
-        if ratings.exists():
-            return ratings.count()
-        return 0
-
 
 class PopularReview(models.Model):
     client = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
@@ -233,7 +233,6 @@ class ToTry(models.Model):
     image = models.ImageField(upload_to='to_try_image/', null=True, blank=True)
     first_description = models.TextField()
     second_description = models.TextField()
-    image = models.ImageField(upload_to='to_try_image/', null=True, blank=True)
 
 
     def __str__(self):
@@ -269,7 +268,7 @@ class Hotels(models.Model):
     name = models.CharField(max_length=155)
     description = models.TextField()
     main_image = models.ImageField(upload_to='main_image/', null=True, blank=True)
-    region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='hotels_region')
+    region = models.ForeignKey(Region_Categoty, on_delete=models.CASCADE, related_name='hotels_region', null=True, blank=True)#Liliya
     popular_places = models.ForeignKey(PopularPlaces, on_delete=models.CASCADE)
     address = models.CharField(max_length=100)
     bedroom = models.PositiveIntegerField(default=1)
@@ -368,7 +367,8 @@ class Kitchen(models.Model):
     kitchen_name = models.CharField(max_length=155)
     description = models.TextField()
     main_image = models.ImageField(upload_to='main_image/', null=True, blank=True)
-    kitchen_region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='hotels_region_image')
+    kitchen_region = models.ForeignKey(Region_Categoty, on_delete=models.CASCADE, null=True, blank=True)#Liliya
+    popular_places = models.ForeignKey(PopularPlaces, on_delete=models.CASCADE, null=True, blank=True)
     price = models.PositiveIntegerField()
     specialized_menu = models.TextField()
     MEAL_TIME = (
@@ -613,12 +613,21 @@ class HandCrafts(models.Model):
 
 class Currency(models.Model):
     currency_name = models.CharField(max_length=300)
-    currency_description = models.TextField()
-    currency_image = models.ImageField(upload_to='currency_images')
     culture = models.ForeignKey(CultureCategory, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.currency_name
+
+
+class Currency_Description(models.Model):
+    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, related_name='currency_description', null=True, blank=True)
+    description = models.TextField()
+
+
+class Currency_Image(models.Model):
+    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, related_name='currency_image', null=True, blank=True)
+    front_image = models.ImageField(upload_to='front_image_currency', null=True, blank=True)
+    back_image = models.ImageField(upload_to='back_image_currency', null=True, blank=True)
 
 
 class NationalInstruments(models.Model):
