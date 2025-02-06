@@ -5,6 +5,9 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .filters import *
 from rest_framework.response import Response
 from django.db.models import Avg, Case, When, Value, IntegerField
+from rest_framework import permissions
+from rest_framework import filters
+ 
 
 # FOR CHARLES DEO
 
@@ -12,11 +15,17 @@ from django.db.models import Avg, Case, When, Value, IntegerField
 class UserProfileCreateAPIView(generics.UpdateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class UserProfileListAPIView(generics.ListAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return UserProfile.objects.filter(id=self.request.user.id)
+
 # FOR HOME
 
 
@@ -259,6 +268,10 @@ class KitchenReviewListAPIView(generics.ListAPIView):
 class EventListAPiView(generics.ListAPIView):
     queryset = Event.objects.all()
     serializer_class = EventSerializers
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    filterset_class = EventFilter
+    search_fields = ['title']
+
 
 
 class CultureListAPiView(generics.ListAPIView):

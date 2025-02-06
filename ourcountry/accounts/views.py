@@ -73,11 +73,6 @@ class CustomLoginView(TokenObtainPairView):
             response_data = {
                 'access': str(access),
                 'refresh': str(refresh),
-                'user': {
-                    'email': user.email,
-                    'first_name': user.first_name,
-                    'last_name': user.last_name,
-                }
             }
 
             response = Response(response_data, status=status.HTTP_200_OK)

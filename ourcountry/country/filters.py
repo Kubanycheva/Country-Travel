@@ -107,7 +107,7 @@ class HotelsReviewFilter(filters.FilterSet):
     )
 
     def filter_month(self, queryset, name, value):
-        return queryset.filter(created_at__month=value)
+        return queryset.filter(created_date__month=value)
 
     class Meta:
         model = HotelsReview
@@ -149,3 +149,13 @@ class AttractionReviewFilter(filters.FilterSet):
     class Meta:
         model = AttractionReview
         fields = ['rating', 'month']
+
+
+class EventFilter(filters.FilterSet):
+    class Meta:
+        model = Event
+        fields = {
+            'category': ['exact'],
+            'date': ['exact'],
+        }
+
