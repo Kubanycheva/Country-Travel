@@ -58,6 +58,7 @@ class AttractionsAdmin(TranslationAdmin):
         }
 
 
+
 class AttractionsReviewImageInline(admin.TabularInline):
     model = AttractionsReviewImage
     extra = 1
@@ -210,4 +211,3 @@ class CultureKitchenAdmin(TranslationAdmin):
         css = {
             'screen': ('modeltranslation/css/tabbed_translation_fields.css',),
         }
-

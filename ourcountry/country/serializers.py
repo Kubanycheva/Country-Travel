@@ -9,6 +9,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ['id','first_name', 'last_name', 'email', 'phone_number', 'user_picture', 'from_user', 'cover_photo']
+        fields = ['first_name', 'last_name', 'email', 'phone_number', 'user_picture', 'from_user', 'cover_photo', "birth_date"]
 
 
 class UserProfileSimpleSerializer(serializers.ModelSerializer):
@@ -134,7 +135,7 @@ class ToTrySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ToTry
-        fields = ['id', 'to_name', 'first_description', 'second_description', 'image']
+        fields = ['id', 'to_name', 'first_description',  'second_description', 'image']
 
 
 
@@ -239,6 +240,7 @@ class HotelReviewListSerializer(serializers.ModelSerializer):
         model = HotelsReview
         fields = ['client_hotel', 'hotel', 'comment', 'static', 'avg_rating', 'rating_count', 'hotel_review_image']
 
+	
     def get_static(self, obj):
         return obj.get_static()
 
@@ -469,6 +471,7 @@ class CurrencySerializers(serializers.ModelSerializer):
     class Meta:
         model = Currency
         fields = ['id',  "culture", 'currency_name', 'currency_description', 'currency_image']
+
 
 
 class NationalInstrumentsSerializers(serializers.ModelSerializer):

@@ -622,6 +622,9 @@ class Currency_Image(models.Model):
     back_image = models.ImageField(upload_to='back_image_currency', null=True, blank=True)
 
 
+
+
+
 class NationalInstruments(models.Model):
     national_name = models.CharField(max_length=300)
     national_description = models.TextField()

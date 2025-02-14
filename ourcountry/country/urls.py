@@ -10,6 +10,7 @@ urlpatterns = [
     path('', include(router.urls)),
 
     path('user_profile_create/', UserProfileCreateAPIView.as_view(), name='user_profile_create'),
+    path('user_profile_create/', UserAPIView.as_view(), name='user_profile_create'),
     path('user_profile_list/', UserProfileListAPIView.as_view(), name='user_profile_list'),
 
 
