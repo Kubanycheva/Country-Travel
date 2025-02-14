@@ -14,17 +14,21 @@ class RegisterView(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         # Сериализация данных пользователя
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            user = serializer.save()
 
-        # Генерация токенов
-        refresh = RefreshToken.for_user(user)
-        access = refresh.access_token
+            # Генерация токенов
+            refresh = RefreshToken.for_user(user)
+            access = refresh.access_token
 
-        # Подготовка ответа
-        response = Response(serializer.data, status=status.HTTP_201_CREATED)
-
+            # Подготовка ответа
+            response = Response(serializer.data, status=status.HTTP_201_CREATED)
+        except serializers.ValidationError as e:
+            return Response({"detail": f"Введенные данные неверны, {e}"}, status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"detail": f"Сервер не работает, {e}"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
         # Сохранение токенов в cookies
         response.set_cookie(
             key='access_token',
@@ -75,30 +79,29 @@ class CustomLoginView(TokenObtainPairView):
                 'refresh': str(refresh),
             }
 
-            response = Response(response_data, status=status.HTTP_200_OK)
-
-            # Установка cookies
-            response.set_cookie(
+        except serializers.ValidationError:
+            return Response({'detail': "Неверные учетные данные"}, status=status.HTTP_401_UNAUTHORIZED)
+        except Exception as e:
+            return Response({"detail": f"Сервер не работает, {e}"}, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response(response_data, status=status.HTTP_200_OK)
+        
+	    # Установка cookies
+        response.set_cookie(
                 key='access_token',
                 value=str(access),
                 httponly=True,
                 secure=False,
                 samesite='Strict',
             )
-            response.set_cookie(
+        response.set_cookie(
                 key='refresh_token',
                 value=str(refresh),
                 httponly=True,
                 secure=False,
                 samesite='Strict',
             )
-            return response
+        return response
 
-        except serializers.ValidationError as e:
-            return Response(
-                {'detail': e.detail},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
 
 
 class LogoutView(generics.GenericAPIView):
@@ -111,7 +114,7 @@ class LogoutView(generics.GenericAPIView):
             if not access_token:
                 return Response({'error': 'Access токен отсутствует'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Аннулируем токен (черный список)
+	            # Аннулируем токен (черный список)
             try:
                 token = AccessToken(access_token)
                 token.blacklist()  # Это сработает только если включен Blacklist
