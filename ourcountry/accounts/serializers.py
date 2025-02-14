@@ -36,60 +36,51 @@ class UserSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         refresh = RefreshToken.for_user(instance)
         return {
-            'user': {
-                'first_name': instance.first_name,
-                'email': instance.email,
-                },
                 'access': str(refresh.access_token),
                 'refresh': str(refresh),
             }
 
 
 class LoginSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    password = serializers.CharField(write_only=True)
-    confirm_password = serializers.CharField(write_only=True)
+        email = serializers.EmailField()
+        password = serializers.CharField(write_only=True)
+        # confirm_password = serializers.CharField(write_only=True)
 
-    def validate(self, data):
-        print("=== Debug info ===")
-        print(f"Email from request: {data['email']}")
+        def validate(self, data):
+            print("=== Debug info ===")
+            print(f"Email from request: {data['email']}")
 
-        # Сначала проверяем совпадение паролей
-        if data['password'] != data['confirm_password']:
-            raise serializers.ValidationError({'password': 'Пароли не совпадают'})
+            # Сначала проверяем совпадение паролей
+            # if data['password'] != data['confirm_password']:
+            #     raise serializers.ValidationError({'password': 'Пароли не совпадают'})
 
-        try:
-            user = UserProfile.objects.get(email=data['email'])
-            print(f"Found user: {user}")
-            print(f"User is_active: {user.is_active}")
+            try:
+                user = UserProfile.objects.get(email=data['email'])
+                print(f"Found user: {user}")
+                print(f"User is_active: {user.is_active}")
 
-            # Проверка пароля
-            password_valid = user.check_password(data['password'])
-            print(f"Password check result: {password_valid}")
+                # Проверка пароля
+                password_valid = user.check_password(data['password'])
+                print(f"Password check result: {password_valid}")
 
-            if not password_valid:
-                raise serializers.ValidationError('Неверный пароль')
+                if not password_valid:
+                    raise serializers.ValidationError('Неверный пароль')
 
-            if not user.is_active:
-                raise serializers.ValidationError('Пользователь неактивен')
+                if not user.is_active:
+                    raise serializers.ValidationError('Пользователь неактивен')
 
-            return {'user': user}
+                return {'user': user}
 
-        except UserProfile.DoesNotExist:
-            raise serializers.ValidationError('Пользователь не найден')
+            except UserProfile.DoesNotExist:
+                raise serializers.ValidationError('Пользователь не найден')
 
-    def to_representation(self, instance):
-        user = instance['user']
-        refresh = RefreshToken.for_user(user)
-        return {
-            'user': {
-                'email': user.email,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-            },
-            'access': str(refresh.access_token),
-            'refresh': str(refresh)
-        }
+        def to_representation(self, instance):
+            user = instance['user']
+            refresh = RefreshToken.for_user(user)
+            return {
+                'access': str(refresh.access_token),
+                'refresh': str(refresh)
+            }
 
 #  RESET PASSWORD
 

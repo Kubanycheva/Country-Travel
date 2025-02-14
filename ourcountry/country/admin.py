@@ -3,8 +3,8 @@ from .models import *
 from modeltranslation.admin import TranslationAdmin, TranslationInlineModelAdmin
 
 
-@admin.register(Region, Attractions, Home, PopularPlaces, ToTry, Culture,
-                Games, NationalClothes, HandCrafts, Currency, NationalInstruments,
+@admin.register(Region, Home, PopularPlaces, ToTry, Culture,
+                Games, NationalClothes, HandCrafts, NationalInstruments,
 
                 )
 class AllAdmin(TranslationAdmin):
@@ -38,8 +38,24 @@ class CultureKitchenAdmin(TranslationAdmin):
             'screen': ('modeltranslation/css/tabbed_translation_fields.css',),
         }
 
+class AttractionsImageInline(admin.TabularInline):
+    model = AttractionsImage
+    extra = 1
 
-admin.site.register(AttractionsImage)
+
+@admin.register(Attractions)
+class AttractionsAdmin(TranslationAdmin):
+    inlines = [AttractionsImageInline]
+
+    class Media:
+        js = (
+            'http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js',
+            'http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js',
+            'modeltranslation/js/tabbed_translation_fields.js',
+        )
+        css = {
+            'screen': ('modeltranslation/css/tabbed_translation_fields.css',),
+        }
 
 
 class AttractionsReviewImageInline(admin.TabularInline):
@@ -168,4 +184,30 @@ admin.site.register(Favorite)
 admin.site.register(FavoriteItem)
 admin.site.register(Region_Categoty)
 admin.site.register(RegionReview)
+
+
+class Currency_DescriptionInlines(TranslationInlineModelAdmin, admin.TabularInline):
+    model = Currency_Description
+    extra = 1
+
+
+class Currency_ImageInlines(admin.TabularInline):
+    model = Currency_Image
+    extra = 1
+
+
+
+@admin.register(Currency)
+class CultureKitchenAdmin(TranslationAdmin):
+    inlines = [Currency_DescriptionInlines, Currency_ImageInlines]
+
+    class Media:
+        js = (
+            'http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js',
+            'http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js',
+            'modeltranslation/js/tabbed_translation_fields.js',
+        )
+        css = {
+            'screen': ('modeltranslation/css/tabbed_translation_fields.css',),
+        }
 
