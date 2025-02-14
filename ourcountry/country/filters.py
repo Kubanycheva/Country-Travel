@@ -1,4 +1,4 @@
-from django_filters import rest_framework as filters
+from django_filters import rest_framework as filters, CharFilter
 from datetime import datetime
 from .models import *
 
@@ -149,3 +149,12 @@ class AttractionReviewFilter(filters.FilterSet):
     class Meta:
         model = AttractionReview
         fields = ['rating', 'month']
+
+
+class EventFilter(filters.FilterSet):
+    # Используем CharFilter для фильтрации по полю 'category__category' (название категории)
+    category = CharFilter(field_name='category__category', lookup_expr='exact')
+
+    class Meta:
+        model = Event
+        fields = ['category', 'date']

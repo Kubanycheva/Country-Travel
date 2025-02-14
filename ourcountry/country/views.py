@@ -1,22 +1,64 @@
+import email
+
 from django.shortcuts import render
+from rest_framework.views import APIView
+
 from .serializers import *
 from rest_framework import viewsets, generics, status
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import *
 from rest_framework.response import Response
 from django.db.models import Avg, Case, When, Value, IntegerField
+from rest_framework import permissions
+from rest_framework import filters
+
 
 # FOR CHARLES DEO
 
 
-class UserProfileCreateAPIView(generics.UpdateAPIView):
+# class UserAPIView(APIView):
+#     queryset = UserProfile.objects.all()
+#     serializer_class = UserProfileSerializer
+#     lookup_field = 'email'  # Ищем по email, а не по pk
+#
+#     def put(self, request, *args, **kwargs):
+#         email = request.user.email
+#         try:
+#             user_profile = UserProfile.objects.get(email=email)
+#         except UserProfile.DoesNotExist:
+#             return Response({'detail': 'UserProfile не найден для этого пользователя'}, status=status.HTTP_404_NOT_FOUND)
+#         serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UserAPIView(generics.UpdateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
+    # lookup_field = 'email'  # Ищем по email, а не по pk
+
+    # def put(self, request, *args, **kwargs):
+    #     email = request.user.email
+    #     try:
+    #         user_profile = UserProfile.objects.get(email=email)
+    #     except UserProfile.DoesNotExist:
+    #         return Response({'detail': 'UserProfile не найден для этого пользователя'}, status=status.HTTP_404_NOT_FOUND)
+    #     serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserProfileListAPIView(generics.ListAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
+    # permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return UserProfile.objects.filter(email=self.request.user.email)
+
 # FOR HOME
 
 
@@ -259,6 +301,9 @@ class KitchenReviewListAPIView(generics.ListAPIView):
 class EventListAPiView(generics.ListAPIView):
     queryset = Event.objects.all()
     serializer_class = EventSerializers
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    filterset_class = EventFilter
+    search_fields = ['title']
 
 
 class CultureListAPiView(generics.ListAPIView):
