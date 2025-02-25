@@ -35,7 +35,7 @@ class UserProfile(AbstractUser):
     cover_photo = models.ImageField(upload_to='cover_photo/', null=True, blank=True)
     birth_date = models.DateField(null=True, blank=True)
 
-    USERNAME_FIELD = 'email'  # Устанавливаем email в качестве идентификатора
+,    USERNAME_FIELD = 'email'  # Устанавливаем email в качестве идентификатора
     REQUIRED_FIELDS = ['first_name', 'last_name']  # Поля, обязательные при создании суперпользователя
 
     objects = UserProfileManager()
@@ -251,7 +251,6 @@ class AttractionReview(models.Model):
     attraction_comment = models.TextField()
     rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], verbose_name='Рейтинг')
     created_date = models.DateField(auto_now_add=True)
-    
 
     def __str__(self):
         return f'{self.client_home}'

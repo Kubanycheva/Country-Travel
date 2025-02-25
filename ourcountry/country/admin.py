@@ -121,6 +121,7 @@ admin.site.register(HotelsReview, HotelsReviewAdmin)
 
 @admin.register(Hotels)
 class HotelsAdmin(TranslationAdmin):
+    inlines = [HotelsImageInlines]
     class Media:
         js = (
             'http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js',
@@ -185,6 +186,7 @@ admin.site.register(Favorite)
 admin.site.register(FavoriteItem)
 admin.site.register(Region_Categoty)
 admin.site.register(RegionReview)
+admin.site.register(Ticket)
 
 
 class Currency_DescriptionInlines(TranslationInlineModelAdmin, admin.TabularInline):

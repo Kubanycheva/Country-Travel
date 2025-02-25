@@ -87,4 +87,3 @@ class CultureTranslationOptions(TranslationOptions):
 @register(CultureKitchen)
 class CultureTranslationOptions(TranslationOptions):
     fields = ('kitchen_name', 'kitchen_description')
-
