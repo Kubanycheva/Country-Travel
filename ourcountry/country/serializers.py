@@ -8,7 +8,6 @@ from django.contrib.auth import authenticate
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ['id','first_name', 'last_name', 'email', 'phone_number', 'user_picture', 'from_user', 'cover_photo']
         fields = ['first_name', 'last_name', 'email', 'phone_number', 'user_picture', 'from_user', 'cover_photo', "birth_date"]
 
 
@@ -22,14 +21,11 @@ class UserProfileSimpleSerializer(serializers.ModelSerializer):
 
 class AttractionsReviewImageSerializers(serializers.ModelSerializer):
     class Meta:
-        model = AttractionsImage
+        model = AttractionsReviewImage
         fields = ['id', 'image']
 
 
 class AttractionReviewListSerializer(serializers.ModelSerializer):
-    avg_rating = serializers.SerializerMethodField()
-    rating_count = serializers.SerializerMethodField()
-    static = serializers.SerializerMethodField()
     client_home = UserProfileSimpleSerializer(read_only=True)
     attractions = serializers.SlugRelatedField(
         queryset=Attractions.objects.all(),
@@ -37,10 +33,32 @@ class AttractionReviewListSerializer(serializers.ModelSerializer):
     )
     attraction_review_image = AttractionsReviewImageSerializers(read_only=True, many=True)
 
+
     class Meta:
         model = AttractionReview
-        fields = ['id', 'client_home', 'static', 'attractions', 'attraction_comment', 'attraction_review_image',
-                  'avg_rating', 'rating_count']
+        fields = ['id', 'client_home', 'attractions', 'attraction_comment', 'attraction_review_image']
+
+
+class PostAttractionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostAttraction
+        fields = '__all__'
+
+
+#NEW-----------
+class AttractionReviewStaticSerializers(serializers.ModelSerializer):
+    avg_rating = serializers.SerializerMethodField()
+    rating_count = serializers.SerializerMethodField()
+    excellent = serializers.SerializerMethodField()
+    good = serializers.SerializerMethodField()
+    not_bad = serializers.SerializerMethodField()
+    bad = serializers.SerializerMethodField()
+    terribly = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Attractions
+        fields = ['id', 'attraction_name', 'avg_rating', "rating_count", 'excellent', 'good', 'not_bad', 'bad',
+                  'terribly']
 
     def get_avg_rating(self, obj):
         return obj.get_avg_rating()
@@ -48,19 +66,53 @@ class AttractionReviewListSerializer(serializers.ModelSerializer):
     def get_rating_count(self, obj):
         return obj.get_rating_count()
 
-    def get_static(self, obj):
-        return obj.get_static()
+    def get_excellent(self, obj):
+        return obj.get_excellent()
+
+    def get_good(self, obj):
+        return obj.get_good()
+
+    def get_not_bad(self, obj):
+        return obj.get_not_bad()
+
+    def get_bad(self, obj):
+        return obj.get_bad()
+
+    def get_terribly(self, obj):
+        return obj.get_terribly()
 
 
 class AttractionReviewCreateSerializer(serializers.ModelSerializer):
+    images = serializers.ListField(
+        child=serializers.ImageField(),
+        write_only=True,
+        required=False,
+    )
+
     class Meta:
         model = AttractionReview
-        fields = ['client_home', 'attractions', 'attraction_comment', 'rating']
+        fields = ['client_home', 'attractions', 'attraction_comment', 'rating', 'images']
 
     def create(self, validated_data):
-        # Сначала сохраняем отзыв
+        images = validated_data.pop('images', [])
         attraction_review = AttractionReview.objects.create(**validated_data)
+
+        for image in images:
+            AttractionsReviewImage.objects.create(attractions=attraction_review, image=image)
+
         return attraction_review
+
+#NEW-----------
+
+
+class AttractionReviewSerializer(serializers.ModelSerializer):
+    attraction_review_image = AttractionsReviewImageSerializers(many=True, read_only=True)
+
+
+    class Meta:
+        model = AttractionReview
+        fields = ['id', 'client_home', 'attractions', 'attraction_comment', 'rating', 'created_date',
+                  'attraction_review_image', 'reply']
 
 
 class AttractionsImageSerializers(serializers.ModelSerializer):
@@ -70,17 +122,19 @@ class AttractionsImageSerializers(serializers.ModelSerializer):
 
 
 class AttractionsListSerializer(serializers.ModelSerializer):
-    avg_rating = serializers.SerializerMethodField()
-    rating_count = serializers.SerializerMethodField()
     region_category = serializers.SlugRelatedField(
         queryset=Region_Categoty.objects.all(),#Liliya
         slug_field='region_category'
     )
+    avg_rating = serializers.SerializerMethodField()
+    rating_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Attractions
-        fields = ['id', 'attraction_name', 'region_category', 'main_image', 'description', 'avg_rating',
-                  'rating_count', 'popular_places']
+        fields = ['id', 'attraction_name', 'region_category', 'main_image', 'description', 'popular_places',
+                  'avg_rating', 'rating_count']
+
+
 
     def get_avg_rating(self, obj):
         return obj.get_avg_rating()
@@ -113,16 +167,15 @@ class HomeSerializer(serializers.ModelSerializer):
 
 
 class PopularPlacesListSerializer(serializers.ModelSerializer):
-    avg_rating = serializers.SerializerMethodField()
-    rating_count = serializers.SerializerMethodField()
     region = serializers.SlugRelatedField(
         slug_field='region_name',
         queryset=Region.objects.all()
     )
-
+    avg_rating = serializers.SerializerMethodField()
+    rating_count = serializers.SerializerMethodField()
     class Meta:
         model = PopularPlaces
-        fields = ['id', 'popular_name', 'popular_image', 'avg_rating', 'rating_count', 'region']
+        fields = ['id', 'popular_name', 'popular_image', 'region', 'avg_rating', 'rating_count']
 
     def get_avg_rating(self, obj):
         return obj.get_avg_rating()
@@ -130,6 +183,48 @@ class PopularPlacesListSerializer(serializers.ModelSerializer):
     def get_rating_count(self, obj):
         return obj.get_rating_count()
 
+#NEW---------------------
+
+
+class PopularPlacesStaticSerializer(serializers.ModelSerializer):
+    avg_rating = serializers.SerializerMethodField()
+    rating_count = serializers.SerializerMethodField()
+    excellent = serializers.SerializerMethodField()
+    good = serializers.SerializerMethodField()
+    not_bad = serializers.SerializerMethodField()
+    bad = serializers.SerializerMethodField()
+    terribly= serializers.SerializerMethodField()
+    class Meta:
+        model = PopularPlaces
+        fields = ['popular_name', 'avg_rating', 'rating_count', 'excellent', 'good', 'not_bad', 'bad',
+                  'terribly']
+
+
+    def get_avg_rating(self, obj):
+        return obj.get_avg_rating()
+
+    def get_rating_count(self, obj):
+        return obj.get_rating_count()
+
+    def get_excellent(self, obj):
+        return obj.get_excellent()
+
+    def get_good(self, obj):
+        return obj.get_good()
+
+    def get_not_bad(self, obj):
+        return obj.get_not_bad()
+
+    def get_bad(self, obj):
+        return obj.get_bad()
+
+    def get_terribly(self, obj):
+        return obj.get_terribly()
+
+
+
+
+#NEW---------------------
 
 class ToTrySerializer(serializers.ModelSerializer):
 
@@ -161,36 +256,43 @@ class RegionSerializer(serializers.ModelSerializer):
 
 
 class PopularReviewListSerializer(serializers.ModelSerializer):
-    avg_rating = serializers.SerializerMethodField()
-    rating_count = serializers.SerializerMethodField()
-    static = serializers.SerializerMethodField()
     client = UserProfileSimpleSerializer(read_only=True)
     review_image = ReviewImageSerializer(read_only=True, many=True)
 
     class Meta:
         model = PopularReview
-        fields = ['id', 'client', 'created_date', 'comment', 'static', 'avg_rating', 'rating_count', 'review_image']
+        fields = ['id', 'client', 'created_date', 'comment', 'review_image']
 
-    def get_avg_rating(self, obj):
-        return obj.get_avg_rating()
 
-    def get_rating_count(self, obj):
-        return obj.get_rating_count()
+class PostPopularSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostPopular
+        fields = '__all__'
 
-    def get_static(self, obj):
-        return obj.get_static()
+#NEW-----------
 
 
 class PopularReviewCreateSerializer(serializers.ModelSerializer):
+    images = serializers.ListField(
+        child=serializers.ImageField(),
+        write_only=True,
+        required=False,
+    )
 
     class Meta:
         model = PopularReview
-        fields = ['client', 'popular', 'comment', 'rating']
+        fields = ['client', 'popular', 'comment', 'rating', 'images']
 
     def create(self, validated_data):
-        # Сначала сохраняем отзыв
-        popular_review_create = PopularReview.objects.create(**validated_data)
-        return popular_review_create
+        images = validated_data.pop('images', [])
+        popular_review = PopularReview.objects.create(**validated_data)
+
+        for image in images:
+            ReviewImage.objects.create(review=popular_review, image=image)
+
+        return popular_review
+
+#NEW-----------
 
 
 class PopularPlacesDetailSerializer(serializers.ModelSerializer):
@@ -210,7 +312,7 @@ class HotelImageSerializers(serializers.ModelSerializer):
 
 
 class HotelsListSerializer(serializers.ModelSerializer):
-    average_rating = serializers.SerializerMethodField()
+    avg_rating = serializers.SerializerMethodField()
     rating_count = serializers.SerializerMethodField()
     region = serializers.SlugRelatedField(
         slug_field='region_category',
@@ -219,37 +321,24 @@ class HotelsListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Hotels
-        fields = ['id', 'name', 'main_image', 'average_rating', 'rating_count', 'region', 'popular_places']
+        fields = ['id', 'name', 'main_image', 'avg_rating', 'rating_count', 'region', 'popular_places']
 
-
-    def get_average_rating(self, obj):
-        return obj.get_average_rating()
-
-    def get_rating_count(self, obj):
-        return obj.get_rating_count()
-
-
-class HotelReviewListSerializer(serializers.ModelSerializer):
-    avg_rating = serializers.SerializerMethodField()
-    rating_count = serializers.SerializerMethodField()
-    client_hotel = UserProfileSimpleSerializer(read_only=True)
-    static = serializers.SerializerMethodField()
-    hotel_review_image = HotelImageSerializers(read_only=True, many=True)
-
-    class Meta:
-        model = HotelsReview
-        fields = ['client_hotel', 'hotel', 'comment', 'static', 'avg_rating', 'rating_count', 'hotel_review_image']
-
-	
-    def get_static(self, obj):
-        return obj.get_static()
 
     def get_avg_rating(self, obj):
         return obj.get_avg_rating()
 
     def get_rating_count(self, obj):
         return obj.get_rating_count()
-        return obj.get_rating_count()
+
+
+class HotelReviewListSerializer(serializers.ModelSerializer):
+    client_hotel = UserProfileSimpleSerializer(read_only=True)
+    hotel_review_image = HotelImageSerializers(read_only=True, many=True)
+
+    class Meta:
+        model = HotelsReview
+        fields = ['client_hotel', 'hotel', 'comment', 'hotel_review_image']
+
 
 
 class HotelDetailSerializer(serializers.ModelSerializer):
@@ -269,19 +358,87 @@ class HotelsReviewImageSerializers(serializers.ModelSerializer):
         fields = ['id', 'image']
 
 
+#NEW-----------
+
 class HotelsReviewCreateSerializer(serializers.ModelSerializer):
+    images = serializers.ListField(
+        child=serializers.ImageField(),
+        write_only=True,
+        required=False,
+    )
 
     class Meta:
         model = HotelsReview
-        fields = ['client_hotel', 'comment', 'hotel', 'rating',]
+        fields = ['client_hotel', 'comment', 'hotel', 'rating', "images"]
 
     def create(self, validated_data):
-        # Сначала сохраняем отзыв
+        images = validated_data.pop('images', [])
         hotel_review_create = HotelsReview.objects.create(**validated_data)
+
+        for image in images:
+            HotelsReviewImage.objects.create(hotel_review=hotel_review_create, image=image)
+
         return hotel_review_create
 
 
+class PostHotelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostHotel
+        fields = '__all__'
+
+#NEW-----------
+
+
+class HotelsReviewSerializer(serializers.ModelSerializer):
+    client_hotel = UserProfileSimpleSerializer(read_only=True)
+    hotel = serializers.SlugRelatedField(
+        queryset=Hotels.objects.all(),
+        slug_field='name'
+    )
+    hotel_review_image = HotelsReviewImageSerializers(read_only=True, many=True)
+
+    class Meta:
+        model = HotelsReview
+        fields = '__all__'
+
+class HotelReviewStaticSerializers(serializers.ModelSerializer):
+    avg_rating = serializers.SerializerMethodField()
+    rating_count = serializers.SerializerMethodField()
+    excellent = serializers.SerializerMethodField()
+    good = serializers.SerializerMethodField()
+    not_bad = serializers.SerializerMethodField()
+    bad = serializers.SerializerMethodField()
+    terribly= serializers.SerializerMethodField()
+
+    class Meta:
+        model = Hotels
+        fields = ['avg_rating', 'rating_count', 'excellent', 'good', 'not_bad', 'bad',
+                  'terribly', 'name']
+
+    def get_avg_rating(self, obj):
+            return obj.get_avg_rating()
+
+    def get_rating_count(self, obj):
+            return obj.get_rating_count()
+
+    def get_excellent(self, obj):
+            return obj.get_excellent()
+
+    def get_good(self, obj):
+            return obj.get_good()
+
+    def get_not_bad(self, obj):
+            return obj.get_not_bad()
+
+    def get_bad(self, obj):
+            return obj.get_bad()
+
+    def get_terribly(self, obj):
+            return obj.get_terribly()
+
+
 # FOR KITCHEN
+
 class KitchenImageSerializers(serializers.ModelSerializer):
     class Meta:
         model = KitchenImage
@@ -311,6 +468,7 @@ class KitchenListSerializer(serializers.ModelSerializer):
         model = Kitchen
         fields = ['id', 'kitchen_name', 'price', 'popular_places', 'kitchen_region', 'type_of_cafe', 'average_rating', 'rating_count', 'main_image']
 
+
     def get_average_rating(self, obj):
         return obj.get_average_rating()
 
@@ -325,10 +483,7 @@ class KitchenReviewImageSerializer(serializers.ModelSerializer):
 
 
 class KitchenReviewListSerializer(serializers.ModelSerializer):
-    avg_rating = serializers.SerializerMethodField()
-    rating_count = serializers.SerializerMethodField()
     client_kitchen = UserProfileSimpleSerializer(read_only=True)
-    static = serializers.SerializerMethodField()
     kitchen_region = serializers.SlugRelatedField(
         queryset=Kitchen.objects.all(),
         slug_field='kitchen_name'
@@ -337,17 +492,14 @@ class KitchenReviewListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = KitchenReview
-        fields = ['client_kitchen', 'kitchen_region', 'comment', 'static', 'avg_rating', 'rating_count',
+        fields = ['client_kitchen', 'kitchen_region', 'comment',
                   'created_at', 'kitchen_review_image']
 
-    def get_static(self, obj):
-        return obj.get_static()
 
-    def get_avg_rating(self, obj):
-        return obj.get_avg_rating()
-
-    def get_rating_count(self, obj):
-        return obj.get_rating_count()
+class PostKitchenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostKitchen
+        fields = '__all__'
 
 
 class KitchenDetailSerializers(serializers.ModelSerializer):
@@ -386,17 +538,67 @@ class KitchenDetailSerializers(serializers.ModelSerializer):
         return obj.get_atmosphere_rating()
 
 
+#NEW-----------
+
 class KitchenReviewCreateSerializer(serializers.ModelSerializer):
+    images = serializers.ListField(
+        child=serializers.ImageField(),
+        write_only=True,
+        required=False,
+    )
 
     class Meta:
         model = KitchenReview
         fields = ['client_kitchen', 'kitchen_region', 'comment', 'rating',
-                  'nutrition_rating', 'service_rating', 'price_rating', 'atmosphere_rating']
+                  'nutrition_rating', 'service_rating', 'price_rating', 'atmosphere_rating', 'images']
 
     def create(self, validated_data):
-        # Сначала сохраняем отзыв
+        images = validated_data.pop('images', [])
         kitchen_review_create = KitchenReview.objects.create(**validated_data)
+
+        for image in images:
+            KitchenReviewImage.objects.create(review=kitchen_review_create, image=image)
+
         return kitchen_review_create
+
+
+class KitchenReviewStaticSerializers(serializers.ModelSerializer):
+    average_rating = serializers.SerializerMethodField()
+    rating_count = serializers.SerializerMethodField()
+    excellent = serializers.SerializerMethodField()
+    good = serializers.SerializerMethodField()
+    not_bad = serializers.SerializerMethodField()
+    bad = serializers.SerializerMethodField()
+    terribly= serializers.SerializerMethodField()
+
+
+    class Meta:
+        model = Kitchen
+        fields = ['kitchen_name', 'average_rating', 'rating_count', 'excellent', 'good', 'not_bad', 'bad',
+                  'terribly']
+
+    def get_average_rating(self, obj):
+        return obj.get_average_rating()
+
+    def get_rating_count(self, obj):
+        return obj.get_rating_count()
+
+    def get_excellent(self, obj):
+            return obj.get_excellent()
+
+    def get_good(self, obj):
+            return obj.get_good()
+
+    def get_not_bad(self, obj):
+            return obj.get_not_bad()
+
+    def get_bad(self, obj):
+            return obj.get_bad()
+
+    def get_terribly(self, obj):
+            return obj.get_terribly()
+
+#NEW-----------
 
 
 class EventCategorySerializers(serializers.ModelSerializer):
@@ -411,6 +613,16 @@ class EventSerializers(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = ['id', 'title', 'image', 'category', 'date', 'time', 'address', 'price']
+
+
+class TicketsSerializers(serializers.ModelSerializer):
+    concert = serializers.SlugRelatedField(
+        queryset=EventCategories.objects.all(),
+        slug_field='category'
+    )
+    class Meta:
+        model = Ticket
+        fields = ['id', 'concert', 'title', 'image', 'date', 'time', 'address', 'price']
 
 
 class CultureSerializers(serializers.ModelSerializer):
@@ -497,16 +709,34 @@ class CultureKitchenSerializers(serializers.ModelSerializer):
         fields = ['id',  "culture", 'kitchen_name', 'kitchen_description', 'culture_kitchen_image']
 
 
+#NEW-----------
+
 class GalleryReviewCreateSerializer(serializers.ModelSerializer):
+    images = serializers.ListField(
+        child=serializers.ImageField(),
+        write_only=True,
+        required=False,
+    )
+
     class Meta:
         model = GalleryReview
-        fields = ['client_gallery', 'comment', 'gallery', 'rating']
+        fields = ['client_gallery', 'comment', 'gallery', 'rating', 'images']
+
 
     def create(self, validated_data):
-        # Сначала сохраняем отзыв
+        images = validated_data.pop('images', [])
         gallery_review_create = GalleryReview.objects.create(**validated_data)
+
+        for image in images:
+            GalleryReviewImage.objects.create(gallery=gallery_review_create, image=image)
+
         return gallery_review_create
 
+class PostGallerySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostGallery
+        fields = '__all__'
+#NEW-----------
 
 class GalleryReviewImageSerializers(serializers.ModelSerializer):
     class Meta:
@@ -557,17 +787,6 @@ class PopularReviewSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class HotelsReviewSerializer(serializers.ModelSerializer):
-    client_hotel = UserProfileSimpleSerializer(read_only=True)
-    hotel = serializers.SlugRelatedField(
-        queryset=Hotels.objects.all(),
-        slug_field='name'
-    )
-    hotel_review_image = HotelsReviewImageSerializers(read_only=True, many=True)
-
-    class Meta:
-        model = HotelsReview
-        fields = '__all__'
 
 
 class KitchenReviewSerializer(serializers.ModelSerializer):

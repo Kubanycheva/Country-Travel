@@ -92,9 +92,70 @@ class PopularPlaces(models.Model):
 
     def get_avg_rating(self):
         ratings = self.popular_reviews.all()
-        valid_ratings = [i.rating for i in ratings if i.rating is not None]
-        if valid_ratings:
-            return round(sum(valid_ratings) / len(valid_ratings), 1)
+        if ratings.exists():
+            return round(sum(rating.rating for rating in ratings) / ratings.count(), 1)
+        return 0
+
+    def get_rating_count(self):
+        ratings = self.popular_reviews.all()
+        if ratings.exists():
+            return ratings.count()
+        return 0
+
+    def get_excellent(self):
+        ratings = self.popular_reviews.all()
+        if ratings.exists():
+            total = 0
+            for i in ratings:
+                if i.rating == 5:
+                    total += 1
+            return total
+        return 0
+
+    def get_good(self):
+        ratings = self.popular_reviews.all()
+        if ratings.exists():
+            total = 0
+            for i in ratings:
+                if i.rating == 4:
+                    total += 1
+            return total
+        return 0
+
+    def get_not_bad(self):
+        ratings = self.popular_reviews.all()
+        if ratings.exists():
+            total = 0
+            for i in ratings:
+                if i.rating == 3:
+                    total += 1
+            return total
+        return 0
+
+    def get_bad(self):
+        ratings = self.popular_reviews.all()
+        if ratings.exists():
+            total = 0
+            for i in ratings:
+                if i.rating == 2:
+                    total += 1
+            return total
+        return 0
+
+    def get_terribly(self):
+        ratings = self.popular_reviews.all()
+        if ratings.exists():
+            total = 0
+            for i in ratings:
+                if i.rating == 1:
+                    total += 1
+            return total
+        return 0
+
+    def get_avg_rating(self):
+        ratings = self.popular_reviews.all()
+        if ratings.exists():
+            return round(sum(rating.rating for rating in ratings) / ratings.count(), 1)
         return 0
 
     def get_rating_count(self):
@@ -114,13 +175,62 @@ class Attractions(models.Model):
     def __str__(self):
         return self.attraction_name
 
-    def get_avg(self):
-        return self.course_review.filter(rating=5).count()
+    # NEW-----------
+
+    def get_excellent(self):
+        ratings = self.attractions_review.all()
+        if ratings.exists():
+            total = 0
+            for i in ratings:
+                if i.rating == 5:
+                    total += 1
+            return total
+        return 0
+
+    def get_good(self):
+        ratings = self.attractions_review.all()
+        if ratings.exists():
+            total = 0
+            for i in ratings:
+                if i.rating == 4:
+                    total += 1
+            return total
+        return 0
+
+    def get_not_bad(self):
+        ratings = self.attractions_review.all()
+        if ratings.exists():
+            total = 0
+            for i in ratings:
+                if i.rating == 3:
+                    total += 1
+            return total
+        return 0
+
+    def get_bad(self):
+        ratings = self.attractions_review.all()
+        if ratings.exists():
+            total = 0
+            for i in ratings:
+                if i.rating == 2:
+                    total += 1
+            return total
+        return 0
+
+    def get_terribly(self):
+        ratings = self.attractions_review.all()
+        if ratings.exists():
+            total = 0
+            for i in ratings:
+                if i.rating == 1:
+                    total += 1
+            return total
+        return 0
 
     def get_avg_rating(self):
         ratings = self.attractions_review.all()
         if ratings.exists():
-            return round(sum(i.rating for i in ratings) / ratings.count(), 1)
+            return round(sum(rating.rating for rating in ratings) / ratings.count(), 1)
         return 0
 
     def get_rating_count(self):
@@ -146,31 +256,17 @@ class AttractionReview(models.Model):
         return f'{self.client_home}'
 
 
-    def get_static(self):
-        related_reviews = AttractionReview.objects.all()
-        count_5 = related_reviews.filter(rating=5).count()
-        count_4 = related_reviews.filter(rating=4).count()
-        count_3 = related_reviews.filter(rating=3).count()
-        count_2 = related_reviews.filter(rating=2).count()
-        count_1 = related_reviews.filter(rating=1).count()
-        return (f"exellent: {count_5} " 
-                f"good: {count_4} "
-                f"not bad: {count_3} "
-                f"bad: {count_2} "
-                f"terribly: {count_1} ")
+class PostAttraction(models.Model):
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='user_attractions')
+    post = models.ForeignKey(AttractionReview, on_delete=models.CASCADE, related_name='post')
+    like = models.BooleanField(default=False)
+    created_date = models.DateField(auto_now=True)
 
-    def get_avg_rating(self):
-        ratings = AttractionReview.objects.all()
-        valid_ratings = [i.rating for i in ratings if i.rating is not None]
-        if valid_ratings:
-            return round(sum(valid_ratings) / len(valid_ratings), 1)
-        return 0
+    class Meta:
+        unique_together = ('user', 'post')
 
-    def get_rating_count(self):
-        ratings = AttractionReview.objects.all()
-        if ratings.exists():
-            return ratings.count()
-        return 0
+    def __str__(self):
+        return f'{self.user} - {self.post}'
 
 
 class AttractionsReviewImage(models.Model):
@@ -191,31 +287,18 @@ class PopularReview(models.Model):
     def __str__(self):
         return f'{self.client}-{self.popular}'
 
-    def get_static(self):
-        related_reviews = PopularReview.objects.all()
-        count_5 = related_reviews.filter(rating=5).count()
-        count_4 = related_reviews.filter(rating=4).count()
-        count_3 = related_reviews.filter(rating=3).count()
-        count_2 = related_reviews.filter(rating=2).count()
-        count_1 = related_reviews.filter(rating=1).count()
-        return (f"exellent: {count_5} " 
-                f"good: {count_4} "
-                f"not bad: {count_3} "
-                f"bad: {count_2} "
-                f"terribly: {count_1} ")
 
-    def get_avg_rating(self):
-        ratings = PopularReview.objects.all()
-        valid_ratings = [i.rating for i in ratings if i.rating is not None]
-        if valid_ratings:
-            return round(sum(valid_ratings) / len(valid_ratings), 1)
-        return 0
+class PostPopular(models.Model):
+    user_popular = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='user_popular')
+    post_popular = models.ForeignKey(PopularReview, on_delete=models.CASCADE, related_name='post_popular')
+    like = models.BooleanField(default=False)
+    created_date = models.DateField(auto_now=True)
 
-    def get_rating_count(self):
-        ratings = PopularReview.objects.all()
-        if ratings.exists():
-            return ratings.count()
-        return 0
+    class Meta:
+        unique_together = ('user_popular', 'post_popular')
+
+    def __str__(self):
+        return f'{self.user_popular} - {self.post_popular}'
 
 
 class ReviewImage(models.Model):
@@ -229,31 +312,13 @@ class ToTry(models.Model):
     image = models.ImageField(upload_to='to_try_image/', null=True, blank=True)
     first_description = models.TextField()
     second_description = models.TextField()
+    image = models.ImageField(upload_to='to_try_image/', null=True, blank=True)
 
     def __str__(self):
         return self.to_name
 
 # FOR FIVE_CATEGORIES
 
-# for places
-
-
-class RegionReview(models.Model):
-    user_name = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
-    region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name='reviews')
-    text = models.TextField(null=True, blank=True)
-    stars = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], null=True, blank=True)
-    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
-    created_date = models.DateField(auto_now_add=True)
-
-    def __str__(self):
-        return f'{self.user_name}'
-
-    def get_avg_rating(self):
-        ratings = self.reviews.all()
-        if ratings.exists():
-            return round(sum(i.rating for i in ratings) / ratings.count(), 1)
-        return 0
 
 
 # FOR Hotels
@@ -295,11 +360,60 @@ class Hotels(models.Model):
     def __str__(self):
         return self.name
 
-    def get_average_rating(self):
+    def get_excellent(self):
         ratings = self.hotel_reviews.all()
-        valid_ratings = [i.rating for i in ratings if i.rating is not None]
-        if valid_ratings:
-            return round(sum(valid_ratings) / len(valid_ratings), 1)
+        if ratings.exists():
+            total = 0
+            for i in ratings:
+                if i.rating == 5:
+                    total += 1
+            return total
+        return 0
+
+    def get_good(self):
+        ratings = self.hotel_reviews.all()
+        if ratings.exists():
+            total = 0
+            for i in ratings:
+                if i.rating == 4:
+                    total += 1
+            return total
+        return 0
+
+    def get_not_bad(self):
+        ratings = self.hotel_reviews.all()
+        if ratings.exists():
+            total = 0
+            for i in ratings:
+                if i.rating == 3:
+                    total += 1
+            return total
+        return 0
+
+    def get_bad(self):
+        ratings = self.hotel_reviews.all()
+        if ratings.exists():
+            total = 0
+            for i in ratings:
+                if i.rating == 2:
+                    total += 1
+            return total
+        return 0
+
+    def get_terribly(self):
+        ratings = self.hotel_reviews.all()
+        if ratings.exists():
+            total = 0
+            for i in ratings:
+                if i.rating == 1:
+                    total += 1
+            return total
+        return 0
+
+    def get_avg_rating(self):
+        ratings = self.hotel_reviews.all()
+        if ratings.exists():
+            return round(sum(rating.rating for rating in ratings) / ratings.count(), 1)
         return 0
 
     def get_rating_count(self):
@@ -324,31 +438,18 @@ class HotelsReview(models.Model):
     def __str__(self):
         return f'{self.client_hotel}'
 
-    def get_static(self):
-        related_reviews = HotelsReview.objects.all()
-        count_5 = related_reviews.filter(rating=5).count()
-        count_4 = related_reviews.filter(rating=4).count()
-        count_3 = related_reviews.filter(rating=3).count()
-        count_2 = related_reviews.filter(rating=2).count()
-        count_1 = related_reviews.filter(rating=1).count()
-        return (f"exellent: {count_5} "
-                f"good: {count_4} "
-                f"not bad: {count_3} "
-                f"bad: {count_2} "
-                f"terribly: {count_1} ")
 
-    def get_avg_rating(self):
-        ratings = HotelsReview.objects.all()
-        valid_ratings = [i.rating for i in ratings if i.rating is not None]
-        if valid_ratings:
-            return round(sum(valid_ratings) / len(valid_ratings), 1)
-        return 0
+class PostHotel(models.Model):
+    user_hotel = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='user_hotel')
+    post_hotel = models.ForeignKey(HotelsReview, on_delete=models.CASCADE, related_name='post_hotel')
+    like = models.BooleanField(default=False)
+    created_date = models.DateField(auto_now=True)
 
-    def get_rating_count(self):
-        ratings = HotelsReview.objects.all()
-        if ratings.exists():
-            return ratings.count()
-        return 0
+    class Meta:
+        unique_together = ('user_hotel', 'post_hotel')
+
+    def __str__(self):
+        return f'{self.user_hotel} - {self.post_hotel}'
 
 
 class HotelsReviewImage(models.Model):
@@ -390,8 +491,8 @@ class Kitchen(models.Model):
         return self.kitchen_name
 
     def get_average_rating(self):
-        ratings = KitchenReview.objects.all()
-        valid_ratings = [i.rating for i in ratings if i.rating is not None]
+        ratings = self.kitchen_reviews.all()
+        valid_ratings = [rating.price_rating for rating in ratings if rating.price_rating is not None]
         if valid_ratings:
             return round(sum(valid_ratings) / len(valid_ratings), 1)
         return 0
@@ -434,6 +535,57 @@ class Kitchen(models.Model):
             return round(sum(valid_ratings) / len(valid_ratings), 1)
         return 0
 
+    def get_excellent(self):
+        ratings = self.kitchen_reviews.all()
+        if ratings.exists():
+            total = 0
+            for i in ratings:
+                if i.rating == 5:
+                    total += 1
+            return total
+        return 0
+
+    def get_good(self):
+        ratings = self.kitchen_reviews.all()
+        if ratings.exists():
+            total = 0
+            for i in ratings:
+                if i.rating == 4:
+                    total += 1
+            return total
+        return 0
+
+    def get_not_bad(self):
+        ratings = self.kitchen_reviews.all()
+        if ratings.exists():
+            total = 0
+            for i in ratings:
+                if i.rating == 3:
+                    total += 1
+            return total
+        return 0
+
+    def get_bad(self):
+        ratings = self.kitchen_reviews.all()
+        if ratings.exists():
+            total = 0
+            for i in ratings:
+                if i.rating == 2:
+                    total += 1
+            return total
+        return 0
+
+    def get_terribly(self):
+        ratings = self.kitchen_reviews.all()
+        if ratings.exists():
+            total = 0
+            for i in ratings:
+                if i.rating == 1:
+                    total += 1
+            return total
+        return 0
+
+
 class KitchenLocation(models.Model):
     address = models.TextField()
     Website = models.URLField(null=True, blank=True)
@@ -458,36 +610,21 @@ class KitchenReview(models.Model):
     atmosphere_rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], null=True, blank=True)
     created_at = models.DateField(auto_now_add=True)
 
-
     def __str__(self):
         return f'{self.client_kitchen}'
 
 
-    def get_static(self):
-        related_reviews = KitchenReview.objects.all()
-        count_5 = related_reviews.filter(rating=5).count()
-        count_4 = related_reviews.filter(rating=4).count()
-        count_3 = related_reviews.filter(rating=3).count()
-        count_2 = related_reviews.filter(rating=2).count()
-        count_1 = related_reviews.filter(rating=1).count()
-        return (f"exellent: {count_5} " 
-                f"good: {count_4} "
-                f"not bad: {count_3} "
-                f"bad: {count_2} "
-                f"terribly: {count_1} ")
+class PostKitchen(models.Model):
+    user_kitchen = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='user_kitchen')
+    post_kitchen = models.ForeignKey(KitchenReview, on_delete=models.CASCADE, related_name='post_kitchen')
+    like = models.BooleanField(default=False)
+    created_date = models.DateField(auto_now=True)
 
-    def get_avg_rating(self):
-        ratings = KitchenReview.objects.all()
-        valid_ratings = [i.rating for i in ratings if i.rating is not None]
-        if valid_ratings:
-            return round(sum(valid_ratings) / len(valid_ratings), 1)
-        return 0
+    class Meta:
+        unique_together = ('user_kitchen', 'post_kitchen')
 
-    def get_rating_count(self):
-        ratings = KitchenReview.objects.all()
-        if ratings.exists():
-            return ratings.count()
-        return 0
+    def __str__(self):
+        return f'{self.user_kitchen} - {self.post_kitchen}'
 
 
 class KitchenReviewImage(models.Model):
@@ -514,6 +651,22 @@ class Event(models.Model):
     time = models.TimeField()
     address = models.CharField(max_length=150)
     price = models.PositiveIntegerField()
+
+    def __str__(self):
+        return self.title
+
+
+class Ticket(models.Model):
+    concert = models.ForeignKey(EventCategories, on_delete=models.CASCADE, related_name='concert')
+    image = models.ImageField(upload_to='event_images/', null=True, blank=True)
+    title = models.CharField(max_length=52)
+    date = models.DateField()
+    time = models.TimeField()
+    address = models.CharField(max_length=150)
+    price = models.PositiveIntegerField()
+
+    def __str__(self):
+        return self.title
 
 
 # FOR GALLERY
@@ -551,11 +704,25 @@ class GalleryReview(models.Model):
         return f'{self.client_gallery}'
 
 
+class PostGallery(models.Model):
+    user_gallery = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='user_gallery')
+    post_gallery = models.ForeignKey(GalleryReview, on_delete=models.CASCADE, related_name='post_gallery')
+    like = models.BooleanField(default=False)
+    created_date = models.DateField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user_gallery', 'post_gallery')
+
+    def __str__(self):
+        return f'{self.user_gallery} - {self.post_gallery}'
+
+
 class GalleryReviewImage(models.Model):
     gallery = models.ForeignKey(GalleryReview, on_delete=models.CASCADE, related_name='gallery_review_image')
     image = models.ImageField(upload_to='gallery_review_image/', null=True, blank=True)
 
 # FOR CULTURE
+
 
 class Culture(models.Model):
     culture_name = models.CharField(max_length=35)
@@ -620,9 +787,6 @@ class Currency_Image(models.Model):
     currency = models.ForeignKey(Currency, on_delete=models.CASCADE, related_name='currency_image', null=True, blank=True)
     front_image = models.ImageField(upload_to='front_image_currency', null=True, blank=True)
     back_image = models.ImageField(upload_to='back_image_currency', null=True, blank=True)
-
-
-
 
 
 class NationalInstruments(models.Model):

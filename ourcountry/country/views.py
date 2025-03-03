@@ -1,6 +1,7 @@
 import email
 
 from django.shortcuts import render
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
 from .serializers import *
@@ -11,6 +12,7 @@ from rest_framework.response import Response
 from django.db.models import Avg, Case, When, Value, IntegerField
 from rest_framework import permissions
 from rest_framework import filters
+from rest_framework.parsers import MultiPartParser
 
 
 # FOR CHARLES DEO
@@ -59,15 +61,6 @@ class UserProfileListAPIView(generics.ListAPIView):
     def get_queryset(self):
         return UserProfile.objects.filter(email=self.request.user.email)
 
-
-class UserProfileListAPIView(generics.ListAPIView):
-    queryset = UserProfile.objects.all()
-    serializer_class = UserProfileSerializer
-
-    def get_queryset(self):
-        return UserProfile.objects.filter(id=self.request.user.id)
-
-
 # FOR HOME
 
 
@@ -93,34 +86,27 @@ class AttractionReviewListAPIView(generics.ListAPIView):
     filterset_class = AttractionReviewFilter
 
 
+class AttractionReviewStaticListApiView(generics.ListAPIView):
+    queryset = Attractions.objects.all()
+    serializer_class = AttractionReviewStaticSerializers
+
+#NEW-----------
+
 class AttractionReviewCreateAPIView(generics.CreateAPIView):
     queryset = AttractionReview.objects.all()
     serializer_class = AttractionReviewCreateSerializer
 
-    def perform_create(self, serializer):
-        # Сначала создаем отзыв
-        attraction_review = serializer.save()
-
-        # Если есть изображения, сохраняем их
-        images = self.request.FILES.getlist('images')
-        for image in images:
-            AttractionsReviewImage.objects.create(attractions=attraction_review, image=image)
-
-        return attraction_review
-
     def post(self, request, *args, **kwargs):
-        # Используем CreateAPIView для обработки POST-запроса
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            # Сначала сохраняем отзыв
-            attraction_review = self.perform_create(serializer)
-
-            # Получаем сериализованные данные для ответа, включая изображения
+            attraction_review = serializer.save()
             response_serializer = AttractionReviewSerializer(attraction_review)
-
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
-
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#NEW-----------
+
+
 
 # FOR REGIONS
 
@@ -147,37 +133,26 @@ class PopularReviewListAPIView(generics.ListAPIView):
     filterset_class = PopularReviewFilter
 
 
+#NEW-----------
+class PopularPlacesStaticAPIView(generics.ListAPIView):
+    queryset = PopularPlaces.objects.all()
+    serializer_class = PopularPlacesStaticSerializer
+
+
+
 class PopularReviewCreateAPIView(generics.CreateAPIView):
     queryset = PopularReview.objects.all()
     serializer_class = PopularReviewCreateSerializer
 
-    def perform_create(self, serializer):
-        # Сначала создаем отзыв
-        popular_review_create = serializer.save()
-
-        # Если есть изображения, сохраняем их
-        images = self.request.FILES.getlist('images')
-        for image in images:
-            ReviewImage.objects.create(review=popular_review_create, image=image)
-
-        return popular_review_create
-
     def post(self, request, *args, **kwargs):
-        # Используем CreateAPIView для обработки POST-запроса
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            # Сначала сохраняем отзыв
-            popular_review_create = self.perform_create(serializer)
-
-            # Получаем сериализованные данные для ответа, включая изображения
-            response_serializer = PopularReviewSerializer(popular_review_create)
-
+            popular_review = serializer.save()
+            response_serializer = PopularReviewSerializer(popular_review)
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
-
-
-
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+#NEW-----------
 
 class ToTryViewSet(viewsets.ModelViewSet):
     queryset = ToTry.objects.all()
@@ -213,37 +188,23 @@ class HotelsReviewListAPIView(generics.ListAPIView):
     filterset_class = HotelsReviewFilter
 
 
+
 class HotelReviewCreateAPiView(generics.CreateAPIView):
     queryset = HotelsReview.objects.all()
     serializer_class = HotelsReviewCreateSerializer
 
-
-    def perform_create(self, serializer):
-        # Сначала создаем отзыв
-        hotel_review_create = serializer.save()
-
-        # Если есть изображения, сохраняем их
-        images = self.request.FILES.getlist('images')
-        for image in images:
-            HotelsReviewImage.objects.create(hotel_review=hotel_review_create, image=image)
-
-        return hotel_review_create
-
     def post(self, request, *args, **kwargs):
-        # Используем CreateAPIView для обработки POST-запроса
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            # Сначала сохраняем отзыв
-            hotel_review_create = self.perform_create(serializer)
-
-            # Получаем сериализованные данные для ответа, включая изображения
-            response_serializer = HotelsReviewSerializer(hotel_review_create)
-
+            hotel_review = serializer.save()
+            response_serializer = HotelsReviewSerializer(hotel_review)
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
-
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class HotelsReviewStaticListAPIView(generics.ListAPIView):
+    queryset = Hotels.objects.all()
+    serializer_class = HotelReviewStaticSerializers
 # for kitchen
 
 class KitchenListView(generics.ListAPIView):
@@ -268,43 +229,33 @@ class KitchenDetailView(generics.RetrieveAPIView):
     serializer_class = KitchenDetailSerializers
 
 
+#NEW-----------
+
 class KitchenReviewCreateAPIView(generics.CreateAPIView):
     queryset = KitchenReview.objects.all()
     serializer_class = KitchenReviewCreateSerializer
 
-    def perform_create(self, serializer):
-        # Сначала создаем отзыв
-        kitchen_review = serializer.save()
-
-        # Если есть изображения, сохраняем их
-        images = self.request.FILES.getlist('images')
-        for image in images:
-            KitchenReviewImage.objects.create(review=kitchen_review, image=image)
-
-        return kitchen_review
-
-
-
     def post(self, request, *args, **kwargs):
-        # Используем CreateAPIView для обработки POST-запроса
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            # Сначала сохраняем отзыв
-            kitchen_review = self.perform_create(serializer)
-
-            # Получаем сериализованные данные для ответа, включая изображения
+            kitchen_review = serializer.save()
             response_serializer = KitchenReviewSerializer(kitchen_review)
-
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
-
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+#NEW-----------
 
 class KitchenReviewListAPIView(generics.ListAPIView):
     queryset = KitchenReview.objects.all()
     serializer_class = KitchenReviewListSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = KitchenReviewFilter
+
+
+class KitchenReviewStaticAPIView(generics.ListAPIView):
+    queryset = Kitchen.objects.all()
+    serializer_class = KitchenReviewStaticSerializers
+
 
 
 class EventListAPiView(generics.ListAPIView):
@@ -314,6 +265,10 @@ class EventListAPiView(generics.ListAPIView):
     filterset_class = EventFilter
     search_fields = ['title']
 
+
+class TicketListAPIView(generics.ListAPIView):
+    queryset = Ticket.objects.all()
+    serializer_class = TicketsSerializers
 
 class CultureListAPiView(generics.ListAPIView):
     queryset = Culture.objects.all()
@@ -355,35 +310,27 @@ class GalleryListAPIView(generics.ListAPIView):
     serializer_class = GallerySerializers
 
 
+
+# NEW-----------
+
 class GalleryReviewCreateAPIView(generics.CreateAPIView):
     queryset = GalleryReview.objects.all()
     serializer_class = GalleryReviewCreateSerializer
 
-    def perform_create(self, serializer):
-        # Сначала создаем отзыв
-        gallery_review = serializer.save()
-
-        # Если есть изображения, сохраняем их
-        images = self.request.FILES.getlist('images')
-        for image in images:
-            GalleryReviewImage.objects.create(gallery=gallery_review, image=image)
-
-        return gallery_review
-
     def post(self, request, *args, **kwargs):
-        # Используем CreateAPIView для обработки POST-запроса
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            # Сначала сохраняем отзыв
-            gallery_review = self.perform_create(serializer)
-
-            # Получаем сериализованные данные для ответа, включая изображения
+            gallery_review = serializer.save()
             response_serializer = GalleryReviewSerializer(gallery_review)
-
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
-
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+class GalleryReviewListAPIView(generics.ListAPIView):
+    queryset = GalleryReview.objects.all()
+    serializer_class = GalleryReviewSerializer
+
+# NEW-----------
 
 class FavoriteItemViewSet(viewsets.ModelViewSet):
     serializer_class = FavoriteSerializers
