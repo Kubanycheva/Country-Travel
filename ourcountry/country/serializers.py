@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ['first_name', 'last_name', 'email', 'phone_number', 'user_picture', 'from_user', 'cover_photo', "birth_date"]
+        fields = ['id', 'first_name', 'last_name', 'email', 'phone_number', 'user_picture', 'from_user', 'cover_photo', "birth_date"]
 
 
 class UserProfileSimpleSerializer(serializers.ModelSerializer):
@@ -38,6 +38,11 @@ class AttractionReviewListSerializer(serializers.ModelSerializer):
         model = AttractionReview
         fields = ['id', 'client_home', 'attractions', 'attraction_comment', 'attraction_review_image']
 
+
+class PostAttractionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostAttraction
+        fields = '__all__'
 
 
 #NEW-----------
@@ -259,6 +264,11 @@ class PopularReviewListSerializer(serializers.ModelSerializer):
         fields = ['id', 'client', 'created_date', 'comment', 'review_image']
 
 
+class PostPopularSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostPopular
+        fields = '__all__'
+
 #NEW-----------
 
 class PopularReviewCreateSerializer(serializers.ModelSerializer):
@@ -336,8 +346,14 @@ class HotelDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hotels
         fields = ['id', 'name', 'hotel_image', 'address', 'description', 'bedroom', 'bathroom', 'cars', 'bikes',
-                  'pets', 'amenities', 'safety_and_hygiene', 'price_short_period',
-                  'price_medium_period', 'price_long_period', 'hotel_reviews']
+                  'pets', 'amenities', 'safety_and_hygiene', 'price_short_period', 'price_medium_period', 'price_long_period', 'hotel_reviews']
+
+
+
+class PostHotelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostHotel
+        fields = '__all__'                 
 
 
 class HotelsReviewImageSerializers(serializers.ModelSerializer):
@@ -510,6 +526,12 @@ class KitchenDetailSerializers(serializers.ModelSerializer):
 
     def get_atmosphere_rating(self, obj):
         return obj.get_atmosphere_rating()
+
+
+class PostKitchenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostKitchen
+        fields = '__all__'
 
 
 #NEW-----------
@@ -703,6 +725,12 @@ class GalleryReviewCreateSerializer(serializers.ModelSerializer):
             GalleryReviewImage.objects.create(gallery=gallery_review_create, image=image)
 
         return gallery_review_create
+
+
+class PostGallerySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostGallery
+        fields = '__all__'
 
 
 #NEW-----------

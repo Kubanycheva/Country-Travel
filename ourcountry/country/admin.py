@@ -188,6 +188,12 @@ admin.site.register(Region_Categoty)
 admin.site.register(RegionReview)
 admin.site.register(Ticket)
 
+admin.site.register(PostKitchen)
+admin.site.register(PostHotel)
+admin.site.register(PostAttraction)
+admin.site.register(PostGallery)
+admin.site.register(PostPopular)
+
 
 class Currency_DescriptionInlines(TranslationInlineModelAdmin, admin.TabularInline):
     model = Currency_Description

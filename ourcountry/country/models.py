@@ -29,7 +29,7 @@ class UserProfileManager(BaseUserManager):
 class UserProfile(AbstractUser):
     username = None  # Убираем поле username
     email = models.EmailField(unique=True)  # Уникальный email для аутентификации
-    phone_number = PhoneNumberField(region='KG', null=True, blank=True)
+    phone_number = PhoneNumberField(region=None, null=True, blank=True)
     user_picture = models.ImageField(upload_to='user_pictures/', null=True, blank=True)
     from_user = models.CharField(max_length=62)
     cover_photo = models.ImageField(upload_to='cover_photo/', null=True, blank=True)
@@ -251,11 +251,23 @@ class AttractionReview(models.Model):
     attraction_comment = models.TextField()
     rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], verbose_name='Рейтинг')
     created_date = models.DateField(auto_now_add=True)
-    
+
 
     def __str__(self):
         return f'{self.client_home}'
 
+
+class PostAttraction(models.Model):
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='user_attractions')
+    post = models.ForeignKey(AttractionReview, on_delete=models.CASCADE, related_name='post')
+    like = models.BooleanField(default=False)
+    created_date = models.DateField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'post')
+
+    def __str__(self):
+        return f'{self.user} - {self.post}'
 
 
 class AttractionsReviewImage(models.Model):
@@ -273,9 +285,21 @@ class PopularReview(models.Model):
     rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], null=True, blank=True, verbose_name='Рейтинг')
     created_date = models.DateField(auto_now_add=True)
 
+
     def __str__(self):
         return f'{self.client}-{self.popular}'
 
+class PostPopular(models.Model):
+    user_popular = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='user_popular')
+    post_popular = models.ForeignKey(PopularReview, on_delete=models.CASCADE, related_name='post_popular')
+    like = models.BooleanField(default=False)
+    created_date = models.DateField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user_popular', 'post_popular')
+
+    def __str__(self):
+        return f'{self.user_popular} - {self.post_popular}'
 
 class ReviewImage(models.Model):
     review = models.ForeignKey(PopularReview, on_delete=models.CASCADE, related_name='review_image')
@@ -305,6 +329,8 @@ class RegionReview(models.Model):
     stars = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], null=True, blank=True)
     parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
     created_date = models.DateField(auto_now_add=True)
+
+
 
     def __str__(self):
         return f'{self.user_name}'
@@ -431,9 +457,22 @@ class HotelsReview(models.Model):
     rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], null=True, blank=True)
     created_date = models.DateField(auto_now_add=True)
 
+
+
     def __str__(self):
         return f'{self.client_hotel}'
 
+class PostHotel(models.Model):
+    user_hotel = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='user_hotel')
+    post_hotel = models.ForeignKey(HotelsReview, on_delete=models.CASCADE, related_name='post_hotel')
+    like = models.BooleanField(default=False)
+    created_date = models.DateField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user_hotel', 'post_hotel')
+
+    def __str__(self):
+        return f'{self.user_hotel} - {self.post_hotel}'
 
 class HotelsReviewImage(models.Model):
     hotel_review = models.ForeignKey(HotelsReview, on_delete=models.CASCADE, related_name='hotel_review_image')
@@ -576,8 +615,8 @@ class KitchenLocation(models.Model):
     email = models.CharField(max_length=60)
     phone_number = PhoneNumberField(null=True, blank=True, region='KG')
     kitchen = models.ForeignKey(Kitchen, on_delete=models.CASCADE, related_name='kitchen')
-    longitude = models.CharField(max_length=60, null=True, blank=True, verbose_name='Долгота')
-    latitude = models.CharField(max_length=60, null=True, blank=True, verbose_name='Широта') #inline
+    longitude = models.CharField(max_length=100, null=True, blank=True, verbose_name='Долгота')
+    latitude = models.CharField(max_length=100, null=True, blank=True, verbose_name='Широта') #inline
 
 
 class KitchenImage(models.Model):
@@ -597,8 +636,25 @@ class KitchenReview(models.Model):
     created_at = models.DateField(auto_now_add=True)
 
 
+
+
+
+
     def __str__(self):
         return f'{self.client_kitchen}'
+
+
+class PostKitchen(models.Model):
+    user_kitchen = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='user_kitchen')
+    post_kitchen = models.ForeignKey(KitchenReview, on_delete=models.CASCADE, related_name='post_kitchen')
+    like = models.BooleanField(default=False)
+    created_date = models.DateField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user_kitchen', 'post_kitchen')
+
+    def __str__(self):
+        return f'{self.user_kitchen} - {self.post_kitchen}'
 
 
 class KitchenReviewImage(models.Model):
@@ -672,8 +728,22 @@ class GalleryReview(models.Model):
     rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], null=True, blank=True)
     created_date = models.DateField(auto_now_add=True)
 
+
+
     def __str__(self):
         return f'{self.client_gallery}'
+
+class PostGallery(models.Model):
+    user_gallery = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='user_gallery')
+    post_gallery = models.ForeignKey(GalleryReview, on_delete=models.CASCADE, related_name='post_gallery')
+    like = models.BooleanField(default=False)
+    created_date = models.DateField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user_gallery', 'post_gallery')
+
+    def __str__(self):
+        return f'{self.user_gallery} - {self.post_gallery}'
 
 
 class GalleryReviewImage(models.Model):

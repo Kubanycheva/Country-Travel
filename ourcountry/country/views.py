@@ -13,44 +13,36 @@ from django.db.models import Avg, Case, When, Value, IntegerField
 from rest_framework import permissions
 from rest_framework import filters
 from rest_framework.parsers import MultiPartParser
+from django.contrib.auth.models import AnonymousUser
+from rest_framework.permissions import IsAuthenticated
 
 
 # FOR CHARLES DEO
 
+class UserAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
-# class UserAPIView(APIView):
-#     queryset = UserProfile.objects.all()
-#     serializer_class = UserProfileSerializer
-#     lookup_field = 'email'  # Ищем по email, а не по pk
-#
-#     def put(self, request, *args, **kwargs):
-#         email = request.user.email
-#         try:
-#             user_profile = UserProfile.objects.get(email=email)
-#         except UserProfile.DoesNotExist:
-#             return Response({'detail': 'UserProfile не найден для этого пользователя'}, status=status.HTTP_404_NOT_FOUND)
-#         serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def patch(self, request, *args, **kwargs):
+        # Проверяем, аутентифицирован ли пользователь
+        if isinstance(request.user, AnonymousUser):
+            return Response({"detail": "Authentication credentials were not provided."},
+                            status=status.HTTP_401_UNAUTHORIZED)
 
-class UserAPIView(generics.UpdateAPIView):
-    queryset = UserProfile.objects.all()
-    serializer_class = UserProfileSerializer
-    # lookup_field = 'email'  # Ищем по email, а не по pk
+        try:
+            # Получаем профиль пользователя по email (или другому полю, связанному с пользователем)
+            user_profile = UserProfile.objects.get(email=request.user.email)
+        except UserProfile.DoesNotExist:
+            return Response({"detail": "User profile not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    # def put(self, request, *args, **kwargs):
-    #     email = request.user.email
-    #     try:
-    #         user_profile = UserProfile.objects.get(email=email)
-    #     except UserProfile.DoesNotExist:
-    #         return Response({'detail': 'UserProfile не найден для этого пользователя'}, status=status.HTTP_404_NOT_FOUND)
-    #     serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(serializer.data)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # Сериализуем данные с partial=True для частичного обновления
+        serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            # Возвращаем ошибки валидации, если данные невалидны
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class UserProfileListAPIView(generics.ListAPIView):
