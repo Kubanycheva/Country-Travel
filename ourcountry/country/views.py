@@ -1,6 +1,8 @@
 import email
 
 from django.shortcuts import render
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
@@ -13,10 +15,46 @@ from django.db.models import Avg, Case, When, Value, IntegerField
 from rest_framework import permissions
 from rest_framework import filters
 from rest_framework.parsers import MultiPartParser
+from django.contrib.auth.models import AnonymousUser
+from rest_framework.permissions import IsAuthenticated
+from .models import Region
+
+
+def get_top_region():
+    top_region = Region.objects.order_by('-rating').first()
+
+    if top_region:
+        return f"Топ 1: {top_region.name} с рейтингом {top_region.rating}"
+    else:
+        return "Нет доступных областей"
+
 
 
 # FOR CHARLES DEO
 
+class UserAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, *args, **kwargs):
+        # Проверяем, аутентифицирован ли пользователь
+        if isinstance(request.user, AnonymousUser):
+            return Response({"detail": "Authentication credentials were not provided."},
+                            status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            # Получаем профиль пользователя по email (или другому полю, связанному с пользователем)
+            user_profile = UserProfile.objects.get(email=request.user.email)
+        except UserProfile.DoesNotExist:
+            return Response({"detail": "User profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Сериализуем данные с partial=True для частичного обновления
+        serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            # Возвращаем ошибки валидации, если данные невалидны
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # class UserAPIView(APIView):
 #     queryset = UserProfile.objects.all()
@@ -34,6 +72,7 @@ from rest_framework.parsers import MultiPartParser
 #             serializer.save()
 #             return Response(serializer.data)
 #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class UserAPIView(generics.UpdateAPIView):
     queryset = UserProfile.objects.all()
@@ -77,6 +116,11 @@ class AttractionsListAPIView(generics.ListAPIView):
 class AttractionsDetailAPIView(generics.RetrieveAPIView):
     queryset = Attractions.objects.all()
     serializer_class = AttractionsDetailSerializer
+
+
+class PostAttractionCreateAPIView(generics.CreateAPIView):
+    serializer_class = PostAttractionSerializer
+
 
 
 class AttractionReviewListAPIView(generics.ListAPIView):
@@ -229,6 +273,11 @@ class KitchenDetailView(generics.RetrieveAPIView):
     serializer_class = KitchenDetailSerializers
 
 
+class PostKitchenCreateAPIView(generics.CreateAPIView):
+    serializer_class = PostKitchenSerializer
+
+
+
 #NEW-----------
 
 class KitchenReviewCreateAPIView(generics.CreateAPIView):
@@ -308,6 +357,10 @@ class CultureKitchenViewSet(viewsets.ModelViewSet):
 class GalleryListAPIView(generics.ListAPIView):
     queryset = Gallery.objects.all()
     serializer_class = GallerySerializers
+
+
+class PostGalleryCreateAPIView(generics.CreateAPIView):
+    serializer_class = PostGallerySerializer
 
 
 

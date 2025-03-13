@@ -186,6 +186,7 @@ admin.site.register(CultureCategory)
 admin.site.register(Favorite)
 admin.site.register(FavoriteItem)
 admin.site.register(Region_Categoty)
+admin.site.register(RegionReview)
 admin.site.register(Ticket)
 
 admin.site.register(PostKitchen)

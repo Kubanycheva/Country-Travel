@@ -3,7 +3,7 @@ from rest_framework import serializers
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from country.models import *
-
+from phonenumber_field.serializerfields import PhoneNumberField
 
 class EmptySerializer(serializers.Serializer):
     pass
@@ -11,6 +11,7 @@ class EmptySerializer(serializers.Serializer):
 
 class UserSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True)
+    phone_number = PhoneNumberField()
 
     class Meta:
         model = UserProfile
